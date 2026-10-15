@@ -73,8 +73,8 @@ export const LogoSettingsView: React.FC = () => {
               label="Shivani Graphics Logo (Upload or Paste URL)"
               folder="branding"
             />
-            <p className="text-[11px] text-slate-400">
-              Recommended: Permanent image URL (e.g. SanishTech CDN link `https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg`).
+            <p className="text-[11px] text-slate-500 font-medium">
+              💡 <strong>Recommendation:</strong> Use <strong>📁 Direct Gallery Upload</strong> from your phone or computer. The image is optimized and saved directly into the database so it <strong>never expires</strong>.
             </p>
           </div>
 
