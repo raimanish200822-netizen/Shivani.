@@ -30,9 +30,10 @@ import { useAdmin } from '../context/AdminContext';
 interface AboutUsPageProps {
   onBackToHome: () => void;
   onExploreCatalog: () => void;
+  onNavigateFounder?: () => void;
 }
 
-export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onBackToHome, onExploreCatalog }) => {
+export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onBackToHome, onExploreCatalog, onNavigateFounder }) => {
   const { websiteContent } = useAdmin();
   const facilityImg = websiteContent.aboutImageUrl || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80';
 
@@ -87,6 +88,30 @@ export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onBackToHome, onExplor
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Founder Spotlight Card */}
+        <div className="rounded-3xl bg-gradient-to-br from-purple-950 via-[#50007c] to-indigo-950 p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md border border-purple-800">
+          <div className="space-y-2 text-center sm:text-left">
+            <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">
+              Leadership & Heritage · Since 1996
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black">
+              Meet Our Founder — Ranjan Roy
+            </h3>
+            <p className="text-xs sm:text-sm text-purple-100 max-w-xl">
+              Discover the 28-year journey of craftsmanship, from a single manual press in 1996 to one of Delhi NCR's most relied-upon commercial printing powerhouses.
+            </p>
+          </div>
+          {onNavigateFounder && (
+            <button
+              type="button"
+              onClick={onNavigateFounder}
+              className="px-5 py-2.5 rounded-xl bg-white text-[#50007c] hover:bg-purple-50 font-bold text-xs shadow-md transition cursor-pointer shrink-0"
+            >
+              Meet Our Founder &rarr;
+            </button>
+          )}
         </div>
 
         {/* 4 Pillars of Shivani Graphics */}

@@ -4,13 +4,16 @@ export const WHATSAPP_PRIMARY = '919266944315';
 export const PHONE_PRIMARY = '919266944315';
 export const PHONE_SECONDARY = '919810157695';
 export const PHONE_HELPLINE = '919266944315';
+export const FOUNDER_PHONE = '919810157695';
+export const FOUNDER_PHONE_DISPLAY = '+91-9810157695';
+export const FOUNDER_WHATSAPP = '919810157695';
 export const SUPPORT_EMAIL = 'shivanidigitalprints@gmail.com';
 
 // Official Registered Business Credentials
 export const BUSINESS_TRADE_NAME = 'Shivani Graphics';
 export const BUSINESS_LEGAL_NAME = 'Shivani Graphics';
 export const BUSINESS_GSTIN = '07AGJPR4456J1ZW';
-export const BUSINESS_OWNER = 'Ranjan';
+export const BUSINESS_OWNER = 'Ranjan Roy';
 export const BUSINESS_OWNER_FULL = 'Ranjan Roy';
 export const BUSINESS_TYPE = 'Proprietorship';
 export const PRINCIPAL_ADDRESS = 'RZC 1/98B C1 Block, Vinod Puri, Vijay Enclave, South Delhi, Delhi - 110045';
@@ -29,6 +32,7 @@ export interface WhatsAppOrderPayload {
   notes?: string;
   customerName?: string;
   customerCity?: string;
+  isCustomQty?: boolean;
 }
 
 export function generateWhatsAppOrderUrl(payload: WhatsAppOrderPayload): string {
@@ -40,7 +44,7 @@ export function generateWhatsAppOrderUrl(payload: WhatsAppOrderPayload): string 
     `*Paper / Media:* ${payload.material}`,
     `*Finish / Lamination:* ${payload.finish}`,
     `*Printing Sides:* ${payload.sides}`,
-    `*Quantity Required:* ${payload.quantity} units`,
+    `*Quantity Required:* ${payload.quantity} units${payload.isCustomQty ? ' ⚡ (Custom Quantity)' : ''}`,
     `--------------------------------------`,
     `*Artwork File Status:* ${payload.hasArtwork ? '✅ Print-ready PDF/CDR ready to share' : '🎨 Need Shivani Design Support'}`,
   ];

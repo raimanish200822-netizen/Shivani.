@@ -169,6 +169,14 @@ interface AdminContextType {
     aboutVision?: string;
     aboutStory?: string;
     aboutImageUrl?: string;
+    founderName?: string;
+    founderRole?: string;
+    founderPhone?: string;
+    founderWhatsapp?: string;
+    founderImageUrl?: string;
+    companyImageUrl?: string;
+    founderBio?: string;
+    founderQuote?: string;
     seoTitle?: string;
     seoDescription?: string;
     seoKeywords?: string;
@@ -232,6 +240,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     aboutVision: 'To be India\'s most trusted digital print & signage partner for small businesses, agencies, and retail brands.',
     aboutStory: 'Founded in Mahavir Enclave, New Delhi, Shivani Graphics started as a boutique digital print desk and grew into a full-fledged high-speed production printing house.',
     aboutImageUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
+    founderName: 'Ranjan Roy',
+    founderRole: 'Founder & Managing Director',
+    founderPhone: '+91-9810157695',
+    founderWhatsapp: '919810157695',
+    founderImageUrl: '',
+    companyImageUrl: '',
+    founderBio: 'Ranjan Roy founded Shivani Graphics in 1996 with a singular pledge: to give every business, creator, and individual pristine commercial print quality with personal accountability.',
+    founderQuote: 'To me, printing is never just paper and ink. It is someone\'s first business card, a startup\'s pitch deck, an author\'s book, or an enterprise\'s grand banner. Since 1996, that promise has never changed.',
     seoTitle: 'Shivani Graphics · Custom Print & Signage | Delhi NCR',
     seoDescription: 'Premium commercial digital printing in Delhi NCR & Pan-India. Visiting cards, banners, standees, corporate stationery, photo frames, and customized merchandising with instant WhatsApp ordering.',
     seoKeywords: 'printing press, visiting cards, flex banners, signages, delhi ncr, shivani graphics, print shop'
@@ -681,6 +697,20 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateWebsiteContent = async (content: any) => {
     try {
+      if (content.founderImageUrl !== undefined) {
+        if (content.founderImageUrl) {
+          localStorage.setItem('shivani_founder_photo', content.founderImageUrl);
+        } else {
+          localStorage.removeItem('shivani_founder_photo');
+        }
+      }
+      if (content.companyImageUrl !== undefined) {
+        if (content.companyImageUrl) {
+          localStorage.setItem('shivani_company_photo', content.companyImageUrl);
+        } else {
+          localStorage.removeItem('shivani_company_photo');
+        }
+      }
       await setDoc(doc(db, 'content', 'site_content'), content, { merge: true });
       setWebsiteContent(content);
       logAction(`Updated website CMS content`, currentAdminUser?.name || 'Admin');

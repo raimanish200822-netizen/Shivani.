@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Save, Check } from 'lucide-react';
+import { Layout, Save, Check, User } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { ImageUploader } from './ImageUploader';
 
@@ -11,7 +11,15 @@ export const CmsView: React.FC = () => {
     aboutDescription: websiteContent.aboutDescription || 'Established with a commitment to lightning-fast printing, superior 350 GSM card stock, and state-of-the-art Konica Minolta digital printing press in Mahavir Enclave, Delhi.',
     aboutMission: websiteContent.aboutMission || 'To provide 5-minute visiting cards, bulk flex banners, and 3D acrylic LED boards with unmatched precision and wholesale pricing.',
     aboutVision: websiteContent.aboutVision || 'To be India\'s most trusted digital print & signage partner for small businesses, agencies, and retail brands.',
-    aboutStory: websiteContent.aboutStory || 'Founded in Mahavir Enclave, New Delhi, Shivani Graphics started as a boutique digital print desk and grew into a full-fledged high-speed production printing house.'
+    aboutStory: websiteContent.aboutStory || 'Founded in Mahavir Enclave, New Delhi, Shivani Graphics started as a boutique digital print desk and grew into a full-fledged high-speed production printing house.',
+    founderName: websiteContent.founderName || 'Ranjan Roy',
+    founderRole: websiteContent.founderRole || 'Founder & Managing Director',
+    founderPhone: websiteContent.founderPhone || '+91-9810157695',
+    founderWhatsapp: websiteContent.founderWhatsapp || '919810157695',
+    founderImageUrl: websiteContent.founderImageUrl || '',
+    companyImageUrl: websiteContent.companyImageUrl || '',
+    founderBio: websiteContent.founderBio || 'Ranjan Roy founded Shivani Graphics in 1996 with a singular pledge: to give every business, creator, and individual pristine commercial print quality with personal accountability.',
+    founderQuote: websiteContent.founderQuote || 'To me, printing is never just paper and ink. It is someone\'s first business card, a startup\'s pitch deck, an author\'s book, or an enterprise\'s grand banner. Since 1996, that promise has never changed.'
   });
   const [saved, setSaved] = useState(false);
 
@@ -101,6 +109,127 @@ export const CmsView: React.FC = () => {
               onChange={(url) => setForm({ ...form, aboutImageUrl: url })}
               label="About Us Facility / Workshop Image (Upload or Paste URL)"
               folder="about"
+            />
+          </div>
+        </div>
+
+        {/* Founder (Ranjan) Page & Photo Management Section */}
+        <div className="p-5 bg-gradient-to-br from-purple-50/70 to-indigo-50/50 rounded-2xl border border-purple-200 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 className="font-black text-sm text-[#50007c] flex items-center gap-2">
+              <User className="w-4 h-4 text-[#50007c]" />
+              <span>👑 Founder Page & Photo Management (Ranjan · Since 1996)</span>
+            </h3>
+            <span className="text-[11px] font-bold text-orange-700 bg-orange-100 px-2.5 py-1 rounded-full border border-orange-200 w-fit">
+              Founder No: 9810157695 (Second Number)
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-600">
+            Upload portrait photo of Founder Ranjan Roy and production facility / storefront photo here. These will reflect immediately on the live website's Meet Our Founder page.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            <div className="p-4 bg-white rounded-xl border border-purple-100 space-y-2">
+              <span className="font-bold text-slate-900 block text-xs">📸 Founder Photo (Ranjan Roy)</span>
+              <ImageUploader
+                value={form.founderImageUrl || ''}
+                onChange={(url) => setForm({ ...form, founderImageUrl: url })}
+                label="Founder Photo (Upload from Gallery or Paste URL)"
+                folder="founder"
+              />
+              <p className="text-[10px] text-slate-500">
+                Upload executive portrait of Founder Ranjan Roy here.
+              </p>
+            </div>
+
+            <div className="p-4 bg-white rounded-xl border border-purple-100 space-y-2">
+              <span className="font-bold text-slate-900 block text-xs">🏭 Shivani Graphics Store / Facility Photo</span>
+              <ImageUploader
+                value={form.companyImageUrl || ''}
+                onChange={(url) => setForm({ ...form, companyImageUrl: url })}
+                label="Company / Facility Photo (Upload or Paste URL)"
+                folder="facility"
+              />
+              <p className="text-[10px] text-slate-500">
+                Upload Mahavir Enclave print facility, press floor, or storefront photo here.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Founder Name</label>
+              <input
+                type="text"
+                value={form.founderName || ''}
+                onChange={(e) => setForm({ ...form, founderName: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium bg-white"
+                placeholder="Ranjan"
+              />
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Founder Title / Designation</label>
+              <input
+                type="text"
+                value={form.founderRole || ''}
+                onChange={(e) => setForm({ ...form, founderRole: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium bg-white"
+                placeholder="Founder & Managing Director"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">
+                Founder Calling Number (Second Number: +91-9810157695)
+              </label>
+              <input
+                type="text"
+                value={form.founderPhone || ''}
+                onChange={(e) => setForm({ ...form, founderPhone: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium bg-white"
+                placeholder="+91-9810157695"
+              />
+              <span className="text-[10px] text-slate-400">Founder direct calling line</span>
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">
+                Founder WhatsApp Number (Second Number: 919810157695)
+              </label>
+              <input
+                type="text"
+                value={form.founderWhatsapp || ''}
+                onChange={(e) => setForm({ ...form, founderWhatsapp: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium bg-white"
+                placeholder="919810157695"
+              />
+              <span className="text-[10px] text-slate-400">Founder direct WhatsApp button link</span>
+            </div>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Founder Message / Quote to Customers</label>
+            <textarea
+              rows={3}
+              value={form.founderQuote || ''}
+              onChange={(e) => setForm({ ...form, founderQuote: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium bg-white leading-relaxed"
+              placeholder="To me, printing is never just paper and ink..."
+            />
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Founder Story / Bio</label>
+            <textarea
+              rows={2}
+              value={form.founderBio || ''}
+              onChange={(e) => setForm({ ...form, founderBio: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium bg-white leading-relaxed"
+              placeholder="Ranjan founded Shivani Graphics in 1996..."
             />
           </div>
         </div>

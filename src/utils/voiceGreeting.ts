@@ -1,7 +1,7 @@
 // Web Speech API Voice Greeting Utility for Shivani Graphics
 // Spoken in Hindi per customer requirement
 
-export const GREETING_TEXT = "शिवानी ग्राफिक्स में आपका स्वागत है! आपकी डिजिटल प्रिंटिंग और डिज़ाइनिंग की सम्पूर्ण दुकान।";
+export const GREETING_TEXT = "Welcome to Shivani Graphics! Your complete destination for digital printing and custom design solutions.";
 const SESSION_KEY = "shivani_voice_greeted";
 const MUTE_KEY = "shivani_voice_muted";
 
@@ -29,7 +29,7 @@ export const markGreeted = (): void => {
 };
 
 /**
- * Triggers the Web Speech API utterance in Hindi.
+ * Triggers the Web Speech API utterance in English.
  * Plays only once per session on first interaction, respecting browser autoplay restrictions.
  */
 export const playWelcomeVoiceGreeting = (force = false): boolean => {
@@ -51,24 +51,21 @@ export const playWelcomeVoiceGreeting = (force = false): boolean => {
     window.speechSynthesis.cancel(); // Cancel any previous speech
 
     const utterance = new SpeechSynthesisUtterance(GREETING_TEXT);
-    utterance.lang = 'hi-IN'; // Set to Hindi (India)
-    utterance.rate = 0.92;    // Natural Hindi speaking cadence
+    utterance.lang = 'en-IN'; // Indian English / Global English
+    utterance.rate = 0.95;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
 
-    // Attempt to pick a natural Hindi voice (e.g., Google हिन्दी, Lekha, Hindi India)
     const voices = window.speechSynthesis.getVoices();
     if (voices && voices.length > 0) {
-      const hindiVoice = voices.find(v => 
-        v.lang === 'hi-IN' || 
-        v.lang.startsWith('hi') ||
-        v.name.includes('Hindi') || 
-        v.name.includes('हिन्दी') ||
-        v.name.includes('Lekha') ||
-        v.name.includes('Kalpana')
+      const preferredVoice = voices.find(v => 
+        v.lang === 'en-IN' || 
+        v.lang === 'en-GB' ||
+        v.lang === 'en-US' ||
+        v.lang.startsWith('en')
       );
-      if (hindiVoice) {
-        utterance.voice = hindiVoice;
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
       }
     }
 

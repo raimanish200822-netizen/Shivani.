@@ -37,6 +37,7 @@ interface HeaderProps {
   onNavigateHome: () => void;
   onNavigateTrack: () => void;
   onNavigateAbout: () => void;
+  onNavigateFounder?: () => void;
   onOpenCompare?: () => void;
 }
 
@@ -53,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateHome,
   onNavigateTrack,
   onNavigateAbout,
+  onNavigateFounder,
   onOpenCompare
 }) => {
   const { siteLogo } = useAdmin();
@@ -229,6 +231,17 @@ export const Header: React.FC<HeaderProps> = ({
             >
               About Us
             </button>
+
+            {onNavigateFounder && (
+              <button
+                type="button"
+                onClick={onNavigateFounder}
+                className="hidden md:inline-flex items-center gap-1 text-xs font-bold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200/60 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                title="Meet Our Founder"
+              >
+                <span>Meet Our Founder</span>
+              </button>
+            )}
 
 
 

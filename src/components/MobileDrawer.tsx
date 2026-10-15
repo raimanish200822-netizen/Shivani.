@@ -21,7 +21,8 @@ import {
   FileText,
   RotateCcw,
   FileCheck,
-  Heart
+  Heart,
+  User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ProductItem } from '../types';
@@ -42,6 +43,7 @@ interface MobileDrawerProps {
   onNavigateHome: () => void;
   onNavigateTrack: () => void;
   onNavigateAbout: () => void;
+  onNavigateFounder?: () => void;
   onNavigatePolicy?: (route: PolicyRoute) => void;
 }
 
@@ -55,6 +57,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onNavigateHome,
   onNavigateTrack,
   onNavigateAbout,
+  onNavigateFounder,
   onNavigatePolicy
 }) => {
   const { siteLogo } = useAdmin();
@@ -89,6 +92,13 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   const handleAbout = () => {
     onClose();
     onNavigateAbout();
+  };
+
+  const handleFounder = () => {
+    onClose();
+    if (onNavigateFounder) {
+      onNavigateFounder();
+    }
   };
 
   const handleStore = () => {
@@ -289,6 +299,19 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                 </button>
+
+                {onNavigateFounder && (
+                  <button
+                    onClick={handleFounder}
+                    className="w-full flex items-center justify-between px-5 py-2 text-xs font-bold hover:bg-purple-50 transition-colors cursor-pointer text-[#50007c]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <User className="w-4 h-4 text-[#50007c]" />
+                      <span>Meet Our Founder</span>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-purple-400" />
+                  </button>
+                )}
               </div>
 
               {/* Store Address & Contact Summary */}

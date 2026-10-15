@@ -5,14 +5,15 @@ import { AdminLayout } from '../admin/AdminLayout';
 
 interface AdminPanelProps {
   onBackToHome: () => void;
+  onNavigateFounder?: () => void;
 }
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToHome }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToHome, onNavigateFounder }) => {
   const { isAdminLoggedIn } = useAdmin();
 
   if (!isAdminLoggedIn) {
     return <AdminLogin onBackToWebsite={onBackToHome} />;
   }
 
-  return <AdminLayout onBackToWebsite={onBackToHome} />;
+  return <AdminLayout onBackToWebsite={onBackToHome} onNavigateFounder={onNavigateFounder} />;
 };

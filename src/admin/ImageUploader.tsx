@@ -30,40 +30,75 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 15MB)
-    if (file.size > 15 * 1024 * 1024) {
-      setErrorMsg('Image file size is too large. Please select an image under 15MB.');
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      setErrorMsg('Image file size is too large. Please select an image under 20MB.');
       return;
     }
 
     setErrorMsg('');
     setUploading(true);
-    setProgress(50);
-    setStatusMessage('Processing gallery image...');
+    setProgress(30);
+    setStatusMessage('Compressing and optimizing image...');
 
     try {
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const base64Result = uploadEvent.target?.result as string;
-        if (base64Result) {
-          setUploading(false);
-          setProgress(100);
-          onChange(base64Result);
-          setStatusMessage('Successfully uploaded from gallery!');
-        } else {
-          setUploading(false);
-          setErrorMsg('Failed to process image.');
-        }
+      const compressImage = (inputFile: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (uploadEvent) => {
+            const rawData = uploadEvent.target?.result as string;
+            if (!rawData) {
+              reject(new Error('Failed to read image'));
+              return;
+            }
+            const img = new Image();
+            img.onload = () => {
+              const MAX_WIDTH = 1200;
+              const MAX_HEIGHT = 1200;
+              let width = img.width;
+              let height = img.height;
+
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height = Math.round((height * MAX_WIDTH) / width);
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width = Math.round((width * MAX_HEIGHT) / height);
+                  height = MAX_HEIGHT;
+                }
+              }
+
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                resolve(rawData);
+                return;
+              }
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+              resolve(compressedBase64);
+            };
+            img.onerror = () => resolve(rawData);
+            img.src = rawData;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(inputFile);
+        });
       };
-      reader.onerror = () => {
-        setUploading(false);
-        setErrorMsg('Failed to read image file from gallery.');
-      };
-      reader.readAsDataURL(file);
+
+      const compressedResult = await compressImage(file);
+      setUploading(false);
+      setProgress(100);
+      onChange(compressedResult);
+      setStatusMessage('Successfully optimized & uploaded from gallery!');
     } catch (err) {
       console.error('Gallery upload error:', err);
       setUploading(false);
-      setErrorMsg('Failed to upload image.');
+      setErrorMsg('Failed to upload image. Please try again or paste image URL.');
     }
   };
 

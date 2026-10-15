@@ -11,7 +11,7 @@ export function GeminiChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      text: 'Namaste! 🙏 I am **Shivani AI**, your personal print & design advisor at Shivani Graphics. How can I help you with visiting cards, flex banners, corporate gifts, or bulk orders today?'
+      text: 'Hello! 👋 I am **Shivani AI**, your personal print & design advisor at Shivani Graphics. How can I help you with visiting cards, banners, corporate merchandise, or custom orders today?'
     }
   ]);
   const [input, setInput] = useState('');

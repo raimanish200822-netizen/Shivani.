@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, ShoppingBag, Package, Image, FileText, Users, CreditCard, 
-  PackageOpen, Tag, Star, BarChart2, ShieldCheck, Settings, Activity, LogOut, Menu, X, ExternalLink, Layers, Database, HelpCircle, Building2, Sparkles 
+  PackageOpen, Tag, Star, BarChart2, ShieldCheck, Settings, Activity, LogOut, Menu, X, ExternalLink, Layers, Database, HelpCircle, Building2, Sparkles, User 
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { LogoSettingsView } from './LogoSettingsView';
@@ -19,9 +19,11 @@ import { InvoicesHistoryView } from './InvoicesHistoryView';
 import { AnalyticsView } from './AnalyticsView';
 import { CustomersView } from './CustomersView';
 import { CrmOrdersView } from './CrmOrdersView';
+import { FounderManagementView } from './FounderManagementView';
 
 interface AdminLayoutProps {
   onBackToWebsite: () => void;
+  onNavigateFounder?: () => void;
 }
 
 interface NavItem {
@@ -35,7 +37,7 @@ interface NavSection {
   items: NavItem[];
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => {
+export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite, onNavigateFounder }) => {
   const { currentAdminUser, logout, products, invoices, siteLogo } = useAdmin();
   const [historyStack, setHistoryStack] = useState<string[]>(['dashboard']);
   const historyRef = React.useRef(historyStack);
@@ -121,6 +123,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
     {
       title: 'System & Admin',
       items: [
+        { id: 'founder', label: 'Founder & Photo (Ranjan Roy)', icon: <User className="w-4 h-4 text-purple-400" /> },
         { id: 'cms', label: 'Website CMS & About Us', icon: <Settings className="w-4 h-4" /> },
         { id: 'about-us', label: 'About Us Collection', icon: <Building2 className="w-4 h-4 text-purple-400" /> },
         { id: 'faqs', label: 'FAQ Management', icon: <HelpCircle className="w-4 h-4 text-blue-400" /> },
@@ -148,6 +151,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
       case 'inventory': return <InventoryView />;
       case 'marketing': return <MarketingView />;
       case 'reviews': return <ReviewsView />;
+      case 'founder': return <FounderManagementView onPreviewFounderPage={onNavigateFounder || onBackToWebsite} />;
       case 'cms': return <CmsView />;
       case 'about-us': return <AboutUsManagementView />;
       case 'faqs': return <FaqManagementView />;

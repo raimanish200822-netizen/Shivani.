@@ -7,7 +7,7 @@ export const PrepressAiAdvisorModal: React.FC = () => {
   const [messages, setMessages] = useState<Array<{ sender: 'bot' | 'user'; text: string }>>([
     {
       sender: 'bot',
-      text: 'Namaste! 🙏 I am Shivani Graphics Prepress AI Advisor. Ask me anything about CMYK files, bleed margins, paper GSM, visiting card lamination, or store pickup at Mahavir Enclave!'
+      text: 'Hello! 👋 I am the Shivani Graphics Prepress AI Advisor. Ask me anything about CMYK files, bleed margins, paper GSM, visiting card lamination, or store pickup at Mahavir Enclave!'
     }
   ]);
   const [input, setInput] = useState('');

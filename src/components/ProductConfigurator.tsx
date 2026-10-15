@@ -12,7 +12,9 @@ import {
   ShoppingBag, 
   Mail, 
   CheckCircle2, 
-  HelpCircle 
+  Plus,
+  Minus,
+  Hash
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ProductItem, CartItem } from '../types';
@@ -30,14 +32,18 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   onAddToCart,
   onOpenArtworkGuide
 }) => {
-  // Initialize state with default values from product config
-  const [selectedSizeId, setSelectedSizeId] = useState(product.config.sizes[0]?.id || '');
-  const [selectedMaterialId, setSelectedMaterialId] = useState(product.config.materials[0]?.id || '');
-  const [selectedFinishId, setSelectedFinishId] = useState(product.config.finishes[0]?.id || '');
-  const [selectedSideId, setSelectedSideId] = useState(product.config.sides[0]?.id || '');
-  const [selectedQty, setSelectedQty] = useState(
-    product.config.quantities.find(q => q.popular)?.qty || product.config.quantities[0]?.qty || 100
-  );
+  // Default specs from product config
+  const defaultSize = product.config.sizes[0]?.name || 'Standard';
+  const defaultMaterial = product.config.materials[0]?.name || 'Standard Quality';
+  const defaultFinish = product.config.finishes[0]?.name || 'Standard Finish';
+  const defaultSide = product.config.sides[0]?.name || 'Single / Both Side';
+
+  // Quantity State: Standard Preset or Custom Quantity
+  const defaultPreset = product.config.quantities.find(q => q.popular)?.qty || product.config.quantities[0]?.qty || 100;
+  const [selectedQty, setSelectedQty] = useState<number>(defaultPreset);
+  const [isCustomQty, setIsCustomQty] = useState<boolean>(false);
+  const [customQtyInput, setCustomQtyInput] = useState<string>(String(defaultPreset));
+
   const [hasArtwork, setHasArtwork] = useState(true);
   const [customNotes, setCustomNotes] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -46,45 +52,56 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
 
   // Sync state if product changes
   React.useEffect(() => {
-    setSelectedSizeId(product.config.sizes[0]?.id || '');
-    setSelectedMaterialId(product.config.materials[0]?.id || '');
-    setSelectedFinishId(product.config.finishes[0]?.id || '');
-    setSelectedSideId(product.config.sides[0]?.id || '');
-    setSelectedQty(
-      product.config.quantities.find(q => q.popular)?.qty || product.config.quantities[0]?.qty || 100
-    );
+    const initialPreset = product.config.quantities.find(q => q.popular)?.qty || product.config.quantities[0]?.qty || 100;
+    setSelectedQty(initialPreset);
+    setIsCustomQty(false);
+    setCustomQtyInput(String(initialPreset));
     setCustomNotes('');
   }, [product.id]);
 
-  // Find active option objects
-  const activeSize = useMemo(() => 
-    product.config.sizes.find(s => s.id === selectedSizeId) || product.config.sizes[0],
-    [product, selectedSizeId]
-  );
+  // Handle Preset Qty Click
+  const handleSelectPreset = (qty: number) => {
+    setIsCustomQty(false);
+    setSelectedQty(qty);
+    setCustomQtyInput(String(qty));
+  };
 
-  const activeMaterial = useMemo(() => 
-    product.config.materials.find(m => m.id === selectedMaterialId) || product.config.materials[0],
-    [product, selectedMaterialId]
-  );
+  // Handle Custom Qty Direct Typing
+  const handleCustomQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, '');
+    setCustomQtyInput(raw);
+    const num = parseInt(raw, 10);
+    if (!isNaN(num) && num > 0) {
+      setSelectedQty(num);
+    }
+  };
 
-  const activeFinish = useMemo(() => 
-    product.config.finishes.find(f => f.id === selectedFinishId) || product.config.finishes[0],
-    [product, selectedFinishId]
-  );
+  // Handle Stepper (+ / -)
+  const handleStep = (delta: number) => {
+    setIsCustomQty(true);
+    const current = selectedQty || 100;
+    const next = Math.max(10, current + delta);
+    setSelectedQty(next);
+    setCustomQtyInput(String(next));
+  };
 
-  const activeSide = useMemo(() => 
-    product.config.sides.find(s => s.id === selectedSideId) || product.config.sides[0],
-    [product, selectedSideId]
-  );
+  // Quick increment chips (+50, +100, +500)
+  const handleAddQuick = (add: number) => {
+    setIsCustomQty(true);
+    const current = selectedQty || 100;
+    const next = current + add;
+    setSelectedQty(next);
+    setCustomQtyInput(String(next));
+  };
 
   // Handle direct WhatsApp quote dispatch
   const handleDirectWhatsAppOrder = () => {
     const url = generateWhatsAppOrderUrl({
       productTitle: product.title,
-      size: activeSize?.name || '',
-      material: activeMaterial?.name || '',
-      finish: activeFinish?.name || '',
-      sides: activeSide?.name || '',
+      size: defaultSize,
+      material: defaultMaterial,
+      finish: defaultFinish,
+      sides: defaultSide,
       quantity: selectedQty,
       hasArtwork,
       notes: customNotes,
@@ -98,10 +115,10 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   const handleDirectEmailOrder = () => {
     const url = generateEmailOrderUrl({
       productTitle: product.title,
-      size: activeSize?.name || '',
-      material: activeMaterial?.name || '',
-      finish: activeFinish?.name || '',
-      sides: activeSide?.name || '',
+      size: defaultSize,
+      material: defaultMaterial,
+      finish: defaultFinish,
+      sides: defaultSide,
       quantity: selectedQty,
       hasArtwork,
       notes: customNotes,
@@ -118,18 +135,18 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
       productId: product.id,
       productTitle: product.title,
       config: {
-        sizeId: selectedSizeId,
-        materialId: selectedMaterialId,
-        finishId: selectedFinishId,
-        sideId: selectedSideId,
+        sizeId: product.config.sizes[0]?.id || 'std',
+        materialId: product.config.materials[0]?.id || 'std',
+        finishId: product.config.finishes[0]?.id || 'std',
+        sideId: product.config.sides[0]?.id || 'std',
         quantity: selectedQty,
         customNotes,
         hasArtwork
       },
-      sizeLabel: activeSize?.name || '',
-      materialLabel: activeMaterial?.name || '',
-      finishLabel: activeFinish?.name || '',
-      sideLabel: activeSide?.name || '',
+      sizeLabel: defaultSize,
+      materialLabel: defaultMaterial,
+      finishLabel: defaultFinish,
+      sideLabel: defaultSide,
       imageUrl: product.images[0]?.url || ''
     };
 
@@ -139,7 +156,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   };
 
   return (
-    <div id="product-configurator-section" className="space-y-6 sm:space-y-8 max-w-full overflow-hidden">
+    <div id="product-configurator-section" className="space-y-6 max-w-full overflow-hidden">
       
       {/* Product Title & Brand Badge Header */}
       <div className="space-y-2 pb-4 border-b border-slate-100">
@@ -190,7 +207,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
         </div>
       </div>
 
-      {/* WhatsApp Custom Specifications & Size Inquiry Box */}
+      {/* WhatsApp Custom Specifications & Requirements Box */}
       <div className="space-y-5">
         <div className="p-5 bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100/50 border border-emerald-200/90 rounded-2xl space-y-4 shadow-sm">
           <div className="flex items-center gap-3">
@@ -211,7 +228,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
               <textarea
                 value={customNotes}
                 onChange={(e) => setCustomNotes(e.target.value)}
-                placeholder="e.g. Size 10x12 inches, 300 GSM Art Card, Matt Lamination, Quantity 500 pcs..."
+                placeholder="e.g. Size 10x12 inches, 300 GSM Art Card, Matt Lamination, or any specific details..."
                 rows={3}
                 className="w-full p-3 rounded-xl border border-emerald-300 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium shadow-inner"
               />
@@ -242,7 +259,107 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
           </div>
         </div>
 
-        {/* 6. Artwork Readiness */}
+        {/* Quantity Selection with Custom Quantity Input */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3.5">
+          <div className="flex items-center justify-between">
+            <span className="block font-black text-slate-900 text-xs sm:text-sm">
+              Quantity (Select Preset or Enter Custom Count):
+            </span>
+            <span className="text-xs font-bold text-[#50007c] bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+              Selected: {selectedQty.toLocaleString()} units
+            </span>
+          </div>
+
+          {/* Preset Buttons */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {product.config.quantities.slice(0, 5).map((q) => {
+              const isSelected = selectedQty === q.qty && !isCustomQty;
+              return (
+                <button
+                  key={q.qty}
+                  type="button"
+                  onClick={() => handleSelectPreset(q.qty)}
+                  className={`py-2 px-2.5 rounded-xl text-center text-xs font-bold border transition cursor-pointer flex flex-col items-center justify-center ${
+                    isSelected
+                      ? 'bg-purple-50 border-[#50007c] text-[#50007c] ring-2 ring-[#50007c]/20'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <span className="font-black">{q.qty.toLocaleString()}</span>
+                  <span className="text-[10px] text-slate-400 font-normal">pcs</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Custom Quantity Stepper & Direct Typing Input */}
+          <div className="pt-2 border-t border-slate-100 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <Hash className="w-3.5 h-3.5 text-[#50007c]" />
+                <span>Custom Quantity (Enter any required count):</span>
+              </label>
+              {isCustomQty && (
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                  Custom Count Active
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleStep(-50)}
+                disabled={selectedQty <= 10}
+                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold flex items-center justify-center cursor-pointer disabled:opacity-40"
+                title="Decrease 50"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={customQtyInput}
+                  onChange={handleCustomQtyChange}
+                  onFocus={() => setIsCustomQty(true)}
+                  placeholder="Type any quantity (e.g. 150, 750, 3500)"
+                  className="w-full h-10 px-3 text-center text-sm font-black text-slate-900 rounded-xl border border-purple-300 focus:outline-none focus:ring-2 focus:ring-[#50007c] bg-white"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                  pcs
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleStep(50)}
+                className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold flex items-center justify-center cursor-pointer"
+                title="Increase 50"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Quick add buttons */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[10px] text-slate-400 font-bold mr-1">Quick Add:</span>
+              {[50, 100, 250, 500, 1000].map(val => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => handleAddQuick(val)}
+                  className="px-2 py-0.5 rounded-md bg-purple-50 hover:bg-purple-100 text-[#50007c] text-[11px] font-bold border border-purple-200 cursor-pointer"
+                >
+                  +{val}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Artwork Readiness */}
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
           <span className="block font-bold text-slate-900 text-xs">
             Artwork & Prepress Status:
@@ -292,41 +409,9 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
           </div>
         </div>
 
-        {/* 7. Optional Customer & Delivery Destination */}
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-3">
-          <span className="block font-bold text-slate-800 text-xs">
-            Optional Project Details (For Faster Quotation):
-          </span>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <input
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Your Name / Company (e.g. Rahul)"
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#50007c]"
-            />
-            <input
-              type="text"
-              value={customerCity}
-              onChange={(e) => setCustomerCity(e.target.value)}
-              placeholder="Delivery City / Area (e.g. Dwarka, Delhi)"
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#50007c]"
-            />
-          </div>
-
-          <textarea
-            rows={2}
-            value={customNotes}
-            onChange={(e) => setCustomNotes(e.target.value)}
-            placeholder="Special instructions (e.g., need 4-hour express courier, gold foil logo, rounded corners)..."
-            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#50007c] resize-none"
-          />
-        </div>
-
       </div>
 
-      {/* Summary Box & Primary Inquiry CTAs (QUOTE-FIRST / NO-PRICE MODEL) */}
+      {/* Summary Box & Primary Inquiry CTAs */}
       <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-[#3b005c] text-white space-y-4 shadow-xl border border-slate-800">
         
         {/* Selected Config Summary */}
@@ -341,8 +426,11 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
 
           <div className="text-xs text-purple-100 space-y-1">
             <p><strong className="text-white">Product:</strong> {product.title}</p>
-            <p><strong className="text-white">Selected Specs:</strong> {activeSize?.name} · {activeMaterial?.name} · {activeFinish?.name} · {activeSide?.name}</p>
-            <p><strong className="text-white">Quantity:</strong> {selectedQty} units · {hasArtwork ? 'Print-ready file' : 'Design Support Needed'}</p>
+            <p><strong className="text-white">Quantity:</strong> {selectedQty.toLocaleString()} units {isCustomQty ? '(Custom Count)' : ''}</p>
+            <p><strong className="text-white">Artwork:</strong> {hasArtwork ? 'Print-ready file available' : 'Design Support Needed'}</p>
+            {customNotes && (
+              <p><strong className="text-white">Custom Notes:</strong> {customNotes}</p>
+            )}
           </div>
         </div>
 
@@ -413,10 +501,10 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
       {/* Sticky Bottom Bar for Mobile Viewport */}
       <StickyWhatsAppButton
         product={product}
-        sizeName={activeSize?.name || ''}
-        materialName={activeMaterial?.name || ''}
-        finishName={activeFinish?.name || ''}
-        sidesName={activeSide?.name || ''}
+        sizeName={defaultSize}
+        materialName={defaultMaterial}
+        finishName={defaultFinish}
+        sidesName={defaultSide}
         quantity={selectedQty}
         hasArtwork={hasArtwork}
         notes={customNotes}

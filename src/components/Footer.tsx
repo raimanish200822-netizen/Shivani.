@@ -25,6 +25,7 @@ interface FooterProps {
   onOpenHelpCenter: () => void;
   onOpenBulkModal: () => void;
   onNavigateAbout?: () => void;
+  onNavigateFounder?: () => void;
   onNavigateTrack?: () => void;
   onNavigateAdmin?: () => void;
   onNavigatePolicy?: (policy: PolicyRoute) => void;
@@ -36,6 +37,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenHelpCenter,
   onOpenBulkModal,
   onNavigateAbout,
+  onNavigateFounder,
   onNavigateTrack,
   onNavigateAdmin,
   onNavigatePolicy
@@ -104,6 +106,17 @@ export const Footer: React.FC<FooterProps> = ({
                 About Shivani Graphics
               </button>
             </li>
+            {onNavigateFounder && (
+              <li>
+                <button 
+                  type="button" 
+                  onClick={onNavigateFounder}
+                  className="hover:text-[#50007c] hover:underline cursor-pointer text-left block font-medium"
+                >
+                  Meet Our Founder
+                </button>
+              </li>
+            )}
             <li>
               <button 
                 type="button" 
@@ -366,6 +379,15 @@ export const Footer: React.FC<FooterProps> = ({
               >
                 About Shivani Graphics
               </button>
+              {onNavigateFounder && (
+                <button 
+                  type="button" 
+                  onClick={onNavigateFounder} 
+                  className="block text-left text-purple-700 font-bold hover:underline cursor-pointer"
+                >
+                  Meet Our Founder
+                </button>
+              )}
               <button 
                 type="button" 
                 onClick={() => handleRoute('contact')} 

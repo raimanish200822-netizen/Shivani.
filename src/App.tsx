@@ -28,12 +28,14 @@ import { PrivacyPage } from './components/pages/PrivacyPage';
 import { RefundPolicyPage } from './components/pages/RefundPolicyPage';
 import { ArtworkGuidelinesPage } from './components/pages/ArtworkGuidelinesPage';
 import { ContactPage } from './components/pages/ContactPage';
+import { FounderPage } from './components/pages/FounderPage';
 
 export type AppView = 
   | 'home' 
   | 'product' 
   | 'category' 
   | 'about' 
+  | 'founder'
   | 'track' 
   | 'help'
   | 'admin'
@@ -69,6 +71,7 @@ export default function App() {
         'artwork-guidelines', 
         'contact', 
         'about', 
+        'founder',
         'track', 
         'help',
         'admin'
@@ -153,7 +156,10 @@ export default function App() {
   if (currentView === 'admin') {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
-        <AdminPanel onBackToHome={() => navigateTo('home')} />
+        <AdminPanel 
+          onBackToHome={() => navigateTo('home')} 
+          onNavigateFounder={() => navigateTo('founder')}
+        />
       </div>
     );
   }
@@ -178,6 +184,7 @@ export default function App() {
         onNavigateHome={() => navigateTo('home')}
         onNavigateTrack={() => navigateTo('track')}
         onNavigateAbout={() => navigateTo('about')}
+        onNavigateFounder={() => navigateTo('founder')}
         onOpenCompare={() => setIsCompareOpen(true)}
       />
 
@@ -194,6 +201,7 @@ export default function App() {
         onNavigateHome={() => navigateTo('home')}
         onNavigateTrack={() => navigateTo('track')}
         onNavigateAbout={() => navigateTo('about')}
+        onNavigateFounder={() => navigateTo('founder')}
         onNavigatePolicy={handlePolicyNavigate}
       />
 
@@ -290,6 +298,15 @@ export default function App() {
               <AboutUsPage
                 onBackToHome={() => navigateTo('home')}
                 onExploreCatalog={() => navigateTo('home')}
+                onNavigateFounder={() => navigateTo('founder')}
+              />
+            )}
+
+            {/* Meet Our Founder (Ranjan) Page */}
+            {currentView === 'founder' && (
+              <FounderPage
+                onBackToHome={() => navigateTo('home')}
+                onExploreCatalog={() => navigateTo('home')}
               />
             )}
 
@@ -319,6 +336,7 @@ export default function App() {
         onOpenHelpCenter={() => navigateTo('help')}
         onOpenBulkModal={() => setIsBulkModalOpen(true)}
         onNavigateAbout={() => navigateTo('about')}
+        onNavigateFounder={() => navigateTo('founder')}
         onNavigateTrack={() => navigateTo('track')}
         onNavigateAdmin={() => navigateTo('admin')}
         onNavigatePolicy={handlePolicyNavigate}

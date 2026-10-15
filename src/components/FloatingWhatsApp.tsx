@@ -151,7 +151,7 @@ export const FloatingWhatsApp: React.FC = () => {
                 </div>
                 <div className="bg-white p-3 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 space-y-1">
                   <p className="font-semibold text-slate-800 leading-relaxed">
-                    Namaste! 🙏 Welcome to <strong className="text-slate-900">Shivani Graphics (Shivani Digital Prints)</strong>.
+                    Hello! 👋 Welcome to <strong className="text-slate-900">Shivani Graphics (Shivani Digital Prints)</strong>.
                   </p>
                   <p className="text-slate-600 leading-relaxed">
                     How can our prepress & printing team assist you today? Looking for urgent counter pickup in Mahavir Enclave or a custom corporate quote?
