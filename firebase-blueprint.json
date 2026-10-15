@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product Entity",
+      "description": "Custom print product details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 200 },
+        "category": { "type": "string", "maxLength": 100 },
+        "basePrice": { "type": "number" }
+      },
+      "required": ["id", "title", "category"]
+    },
+    "Order": {
+      "title": "Order Entity",
+      "description": "Customer print order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "maxLength": 50 },
+        "totalAmount": { "type": "number" }
+      },
+      "required": ["id", "customerName", "status"]
+    },
+    "Quote": {
+      "title": "Quote Entity",
+      "description": "Custom quote inquiry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "productTitle": { "type": "string", "maxLength": 200 }
+      },
+      "required": ["id", "customerName"]
+    },
+    "Customer": {
+      "title": "Customer Entity",
+      "description": "CRM customer record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "name", "phone"]
+    },
+    "OrderInquiry": {
+      "title": "Order Inquiry Entity",
+      "description": "Order inquiries from customers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "customerPhone": { "type": "string", "maxLength": 50 },
+        "productTitle": { "type": "string", "maxLength": 200 },
+        "quantity": { "type": "number" }
+      },
+      "required": ["id", "customerName", "customerPhone", "productTitle"]
+    },
+    "SupportLog": {
+      "title": "Support Log Entity",
+      "description": "Customer support interaction logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "customerPhone": { "type": "string", "maxLength": 50 },
+        "queryType": { "type": "string", "maxLength": 100 },
+        "message": { "type": "string", "maxLength": 1000 }
+      },
+      "required": ["id", "customerName", "customerPhone", "message"]
+    },
+    "AboutUs": {
+      "title": "About Us Entity",
+      "description": "About Us sections and narrative blocks",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "sectionKey": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "title", "description"]
+    },
+    "Faq": {
+      "title": "FAQ Entity",
+      "description": "Frequently asked questions collection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string", "maxLength": 300 },
+        "answer": { "type": "string", "maxLength": 1000 },
+        "category": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "question", "answer"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Print products catalog"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer orders"
+    },
+    "/quotes/{quoteId}": {
+      "schema": "Quote",
+      "description": "Customer quote requests"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer database records"
+    },
+    "/order_inquiries/{inquiryId}": {
+      "schema": "OrderInquiry",
+      "description": "Order inquiries sync collection"
+    },
+    "/support_logs/{logId}": {
+      "schema": "SupportLog",
+      "description": "Customer support logs collection"
+    },
+    "/about_us/{aboutId}": {
+      "schema": "AboutUs",
+      "description": "About Us collection"
+    },
+    "/faqs/{faqId}": {
+      "schema": "Faq",
+      "description": "FAQ knowledgebase collection"
+    }
+  }
+}
