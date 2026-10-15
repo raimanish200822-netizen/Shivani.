@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { MessageCircle, X, Send, Clock, Sparkles, CheckCheck } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { MessageCircle, X, Send, Clock, Sparkles, CheckCheck, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WHATSAPP_PRIMARY } from '../utils/whatsapp';
 import { useAdmin } from '../context/AdminContext';
@@ -9,6 +9,8 @@ export const FloatingWhatsApp: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [userMessage, setUserMessage] = useState('');
   const [isAgentTyping, setIsAgentTyping] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const quickPrompts = [
     { label: '⚡ Urgent Same-Day Print', text: 'Hello Shivani Graphics! I need urgent same-day printing in Delhi NCR.' },
@@ -28,6 +30,14 @@ export const FloatingWhatsApp: React.FC = () => {
     }
   }, [isOpen]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAttachedFile(file);
+      setUserMessage(prev => prev ? `${prev} (Attached Artwork: ${file.name})` : `Hello Shivani Graphics! I am attaching my design artwork (${file.name}) for print proof check.`);
+    }
+  };
+
   const handleSendMessage = (customText?: string) => {
     const textToSend = customText || userMessage || 'Hello Shivani Graphics! I would like to inquire about printing services.';
     
@@ -37,6 +47,7 @@ export const FloatingWhatsApp: React.FC = () => {
       const url = `https://wa.me/${WHATSAPP_PRIMARY}?text=${encodeURIComponent(textToSend)}`;
       window.open(url, '_blank');
       setUserMessage('');
+      setAttachedFile(null);
       setIsAgentTyping(false);
       setIsOpen(false);
     }, 700);
@@ -214,23 +225,55 @@ export const FloatingWhatsApp: React.FC = () => {
             </div>
 
             {/* Input & Direct Redirect Bar */}
-            <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
-              <input
-                type="text"
-                value={userMessage}
-                onChange={(e) => setUserMessage(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Type your print query..."
-                className="flex-1 px-3 py-2 bg-slate-100 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-emerald-500/30"
-              />
-              <button
-                type="button"
-                onClick={() => handleSendMessage()}
-                className="p-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors flex items-center justify-center cursor-pointer"
-                aria-label="Send WhatsApp message"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+            <div className="p-3 bg-white border-t border-slate-100 flex flex-col gap-2">
+              {attachedFile && (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs text-emerald-900">
+                  <span className="truncate font-medium flex items-center gap-1.5">
+                    <span>📎</span> {attachedFile.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAttachedFile(null)}
+                    className="text-emerald-700 hover:text-emerald-900 font-bold cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".pdf,.cdr,.ai,.psd,.eps,.jpg,.jpeg,.png,.webp"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer shrink-0"
+                  title="Attach Design Artwork (PDF/CDR/Image)"
+                  aria-label="Attach design artwork"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+                <input
+                  type="text"
+                  value={userMessage}
+                  onChange={(e) => setUserMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Type your print query..."
+                  className="flex-1 px-3 py-2 bg-slate-100 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-emerald-500/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSendMessage()}
+                  className="p-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                  aria-label="Send WhatsApp message"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Trust disclaimer */}

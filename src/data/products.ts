@@ -1990,7 +1990,7 @@ export const PRODUCTS: ProductItem[] = [
 export const CATEGORIES = [
   { 
     id: 'all', 
-    label: 'All Products (25 Items)', 
+    label: 'All Products', 
     iconName: 'Printer', 
     description: 'Explore the complete digital, commercial print, and signage collection at Shivani Graphics.' 
   },

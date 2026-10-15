@@ -64,6 +64,11 @@ export interface VisitorStats {
   trafficByDay: { day: string; visitors: number; inquiries: number; orders: number }[];
 }
 
+const INITIAL_REVIEWS: ReviewItem[] = [
+  { id: 'rev-1', name: 'Rohan Sharma', rating: 5, review: 'Amazing quality visiting cards ready in just 5 minutes at Mahavir Enclave store!', date: '2026-10-06', approved: true },
+  { id: 'rev-2', name: 'Neha Gupta', rating: 5, review: 'Best flex banner printing in Delhi NCR. Very prompt service.', date: '2026-10-07', approved: true }
+];
+
 export interface CouponItem {
   code: string;
   discountType: 'percentage' | 'fixed';
@@ -185,6 +190,8 @@ interface AdminContextType {
   toggleReviewApproval: (id: string) => Promise<void>;
   deleteReview: (id: string) => Promise<void>;
   addPublicReview: (review: { name: string; rating: number; review: string; photo?: string }) => Promise<void>;
+  categories: any[];
+  updateCategory: (category: any) => Promise<void>;
   auditLogs: AuditLog[];
   visitorStats: VisitorStats;
   siteLogo: string;
@@ -201,6 +208,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentAdminUser, setCurrentAdminUser] = useState<AdminUser | null>(null);
 
   const [products, setProducts] = useState<ProductItem[]>(PRODUCTS);
+  const [categories, setCategories] = useState<any[]>(CATEGORIES);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
@@ -234,10 +242,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     { id: 'inv-2', item: 'Star Flex Vinyl Roll 340 GSM', sku: 'FLEX-340GSM', currentStock: 12, minStock: 3, unit: 'Rolls' },
     { id: 'inv-3', item: 'Matte Lamination Roll', sku: 'LAM-MATTE', currentStock: 8, minStock: 2, unit: 'Rolls' }
   ]);
-  const [reviews, setReviews] = useState<ReviewItem[]>([
-    { id: 'rev-1', name: 'Rohan Sharma', rating: 5, review: 'Amazing quality visiting cards ready in just 5 minutes at Mahavir Enclave store!', date: '2026-10-06', approved: true },
-    { id: 'rev-2', name: 'Neha Gupta', rating: 5, review: 'Best flex banner printing in Delhi NCR. Very prompt service.', date: '2026-10-07', approved: true }
-  ]);
+  const [reviews, setReviews] = useState<ReviewItem[]>(INITIAL_REVIEWS);
   const [faqs, setFaqs] = useState<FaqItem[]>(FAQS);
   const [aboutUs, setAboutUs] = useState<AboutUsItem[]>([
     { id: 'about-1', title: '5-Min Counter & Same-Day Speed', subtitle: 'Mahavir Enclave, New Delhi', description: '5-minute counter pickup and same-day express bike courier delivery across Delhi NCR for urgent meetings and events.', sectionKey: 'mission', order: 1 },
@@ -283,38 +288,23 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // 2. Banners / Website Images Listener
     const unsubBanners = onSnapshot(collection(db, 'banners'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as WebsiteImage);
-        setWebsiteImages(items);
-      } else {
-        const defaultBanners = [
-          { id: 'img-1', title: 'Homepage Hero Main', section: 'Hero', url: 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=1200&q=80', alt: 'Visiting Cards', enabled: true, sortOrder: 1 },
-          { id: 'img-2', title: 'Outdoor Flex Banner', section: 'Hero', url: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1200&q=80', alt: 'Flex Banners', enabled: true, sortOrder: 2 }
-        ];
-        defaultBanners.forEach(async (b) => {
-          try { await setDoc(doc(db, 'banners', b.id), b); } catch (err) {}
-        });
-        setWebsiteImages(defaultBanners);
-      }
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as WebsiteImage));
+      setWebsiteImages(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'banners');
     });
 
     // 3. Orders Listener
     const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as AdminOrder);
-        setOrders(items);
-      } else {
-        setOrders([]);
-      }
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminOrder));
+      setOrders(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'orders');
     });
 
     // 4. Invoices Listener
     const unsubInvoices = onSnapshot(collection(db, 'invoices'), (snapshot) => {
-      const items = snapshot.docs.map(doc => doc.data() as InvoiceRecord);
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as InvoiceRecord));
       setInvoices(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'invoices');
@@ -322,7 +312,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // 4b. Customers Listener
     const unsubCustomers = onSnapshot(collection(db, 'customers'), (snapshot) => {
-      const items = snapshot.docs.map(doc => doc.data() as AdminCustomer);
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminCustomer));
       setCustomers(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'customers');
@@ -330,7 +320,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // 5. Quotes Listener
     const unsubQuotes = onSnapshot(collection(db, 'quotes'), (snapshot) => {
-      const items = snapshot.docs.map(doc => doc.data() as AdminQuote);
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminQuote));
       setQuotes(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'quotes');
@@ -338,86 +328,55 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // 6. Reviews Listener
     const unsubReviews = onSnapshot(collection(db, 'reviews'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as ReviewItem);
-        setReviews(items);
-      } else {
-        const defaultReviews = [
-          { id: 'rev-1', name: 'Rohan Sharma', rating: 5, review: 'Amazing quality visiting cards ready in just 5 minutes at Mahavir Enclave store!', date: '2026-10-06', approved: true },
-          { id: 'rev-2', name: 'Neha Gupta', rating: 5, review: 'Best flex banner printing in Delhi NCR. Very prompt service.', date: '2026-10-07', approved: true }
-        ];
-        defaultReviews.forEach(async (r) => {
-          try { await setDoc(doc(db, 'reviews', r.id), r); } catch (err) {}
-        });
-        setReviews(defaultReviews);
-      }
+      const firestoreReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as ReviewItem));
+      const merged = [...firestoreReviews];
+      const firestoreIds = new Set(firestoreReviews.map(r => r.id));
+      INITIAL_REVIEWS.forEach(r => {
+        if (!firestoreIds.has(r.id)) {
+          merged.push(r);
+          setDoc(doc(db, 'reviews', r.id), r).catch(() => {});
+        }
+      });
+      setReviews(merged);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'reviews');
     });
 
     // 7. Coupons Listener
     const unsubCoupons = onSnapshot(collection(db, 'coupons'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as CouponItem);
-        setCoupons(items);
-      } else {
-        const defaultCoupons: CouponItem[] = [
-          { code: 'SHIVANI500', discountType: 'fixed', discountValue: 500, minOrder: 5000, active: true },
-          { code: 'PRINT10', discountType: 'percentage', discountValue: 10, minOrder: 1000, active: true }
-        ];
-        defaultCoupons.forEach(async (c) => {
-          try { await setDoc(doc(db, 'coupons', c.code), c); } catch (err) {}
-        });
-        setCoupons(defaultCoupons);
-      }
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as CouponItem));
+      setCoupons(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'coupons');
     });
 
     // 8. Inventory Listener
     const unsubInventory = onSnapshot(collection(db, 'inventory'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as InventoryItem);
-        setInventory(items);
-      } else {
-        const defaultInv = [
-          { id: 'inv-1', item: '350 GSM Art Card Reams', sku: 'PAPER-350GSM', currentStock: 45, minStock: 10, unit: 'Reams' },
-          { id: 'inv-2', item: 'Star Flex Vinyl Roll 340 GSM', sku: 'FLEX-340GSM', currentStock: 12, minStock: 3, unit: 'Rolls' },
-          { id: 'inv-3', item: 'Matte Lamination Roll', sku: 'LAM-MATTE', currentStock: 8, minStock: 2, unit: 'Rolls' }
-        ];
-        defaultInv.forEach(async (i) => {
-          try { await setDoc(doc(db, 'inventory', i.id), i); } catch (err) {}
-        });
-        setInventory(defaultInv);
-      }
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as InventoryItem));
+      setInventory(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'inventory');
+    });
+
+    // 8b. Categories Listener
+    const unsubCategories = onSnapshot(collection(db, 'categories'), (snapshot) => {
+      const firestoreCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const merged = [...firestoreCategories];
+      CATEGORIES.forEach(c => {
+        if (!merged.find((item: any) => item.id === c.id)) {
+          merged.push(c);
+          setDoc(doc(db, 'categories', c.id), c).catch(() => {});
+        }
+      });
+      setCategories(merged);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'categories');
     });
 
     // 9. Website Content Listener
     const unsubContent = onSnapshot(doc(db, 'content', 'site_content'), (docSnap) => {
       if (docSnap.exists()) {
         setWebsiteContent(docSnap.data() as any);
-      } else {
-        const initialContent: any = {
-          heroHeading: 'Shivani Graphics · Printo-Style Commercial Printing',
-          heroSubtitle: 'Premium digital printing, visiting cards, flex banners, 3D acrylic LED boards & corporate merch in Delhi NCR.',
-          phone: '+91-9266944315',
-          whatsapp: '919266944315',
-          email: 'shivanidigitalprints@gmail.com',
-          address: 'D3/50, Gali No. 8A, Mahavir Enclave, New Delhi, Delhi 110045',
-          businessName: 'Shivani Graphics',
-          aboutTitle: 'About Shivani Graphics - Delhi NCRs Premier Commercial Printing Press',
-          aboutDescription: 'Established with a commitment to lightning-fast printing, superior 350 GSM card stock, and state-of-the-art Konica Minolta digital printing press in Mahavir Enclave, Delhi.',
-          aboutMission: 'To provide 5-minute visiting cards, bulk flex banners, and 3D acrylic LED boards with unmatched precision and wholesale pricing.',
-          aboutVision: 'To be India\'s most trusted digital print & signage partner for small businesses, agencies, and retail brands.',
-          aboutStory: 'Founded in Mahavir Enclave, New Delhi, Shivani Graphics started as a boutique digital print desk and grew into a full-fledged high-speed production printing house.',
-          seoTitle: 'Shivani Graphics · Custom Print & Signage | Delhi NCR',
-          seoDescription: 'Premium commercial digital printing in Delhi NCR & Pan-India. Visiting cards, banners, standees, corporate stationery, photo frames, and customized merchandising with instant WhatsApp ordering.',
-          seoKeywords: 'printing press, visiting cards, flex banners, signages, delhi ncr, shivani graphics, print shop'
-        };
-        setDoc(doc(db, 'content', 'site_content'), initialContent).catch(() => {});
-        setWebsiteContent(initialContent);
       }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'content/site_content');
@@ -425,34 +384,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // 10. FAQs Listener
     const unsubFaqs = onSnapshot(collection(db, 'faqs'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as FaqItem);
-        setFaqs(items);
-      } else {
-        FAQS.forEach(async (f) => {
-          try { await setDoc(doc(db, 'faqs', f.id), f); } catch (err) {}
-        });
-        setFaqs(FAQS);
-      }
+      const items = snapshot.docs.map(doc => doc.data() as FaqItem);
+      setFaqs(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'faqs');
     });
 
     // 11. AboutUs Listener
     const unsubAboutUs = onSnapshot(collection(db, 'about_us'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as AboutUsItem);
-        setAboutUs(items);
-      } else {
-        const defaultAbout = [
-          { id: 'about-1', title: '5-Min Counter & Same-Day Speed', subtitle: 'Mahavir Enclave, New Delhi', description: '5-minute counter pickup and same-day express bike courier delivery across Delhi NCR for urgent meetings and events.', sectionKey: 'mission', order: 1 },
-          { id: 'about-2', title: '1200 DPI Industrial Output', subtitle: 'Heavy Art Cardboards', description: 'Heavy 350-400 GSM art cardboards, velvet touch laminations, and raised spot UV tactile embossing.', sectionKey: 'infrastructure', order: 2 }
-        ];
-        defaultAbout.forEach(async (a) => {
-          try { await setDoc(doc(db, 'about_us', a.id), a); } catch (err) {}
-        });
-        setAboutUs(defaultAbout);
-      }
+      const items = snapshot.docs.map(doc => doc.data() as AboutUsItem);
+      setAboutUs(items);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'about_us');
     });
@@ -672,6 +613,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       logAction(`Deleted customer ID: ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
       handleFirestoreError(e, OperationType.DELETE, `customers/${id}`);
+    }
+  };
+
+  const updateCategory = async (category: any) => {
+    try {
+      await setDoc(doc(db, 'categories', category.id), category, { merge: true });
+      logAction(`Updated category: ${category.label}`, currentAdminUser?.name || 'Admin');
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `categories/${category.id}`);
     }
   };
 
@@ -895,6 +845,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       toggleReviewApproval,
       deleteReview,
       addPublicReview,
+      categories,
+      updateCategory,
       auditLogs,
       visitorStats,
       siteLogo,

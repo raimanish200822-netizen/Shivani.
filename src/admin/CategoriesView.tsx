@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Layers, Plus, Edit3, Trash2, X, Search } from 'lucide-react';
-import { CATEGORIES } from '../data/products';
+import { useAdmin } from '../context/AdminContext';
 
 export const CategoriesView: React.FC = () => {
-  const [categories, setCategories] = useState(CATEGORIES);
+  const { categories, updateCategory } = useAdmin();
   const [search, setSearch] = useState('');
   const [editingCat, setEditingCat] = useState<any | null>(null);
 
@@ -88,8 +88,8 @@ export const CategoriesView: React.FC = () => {
               <button onClick={() => setEditingCat(null)} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl cursor-pointer">
                 Cancel
               </button>
-              <button onClick={() => {
-                setCategories(categories.map(c => c.id === editingCat.id ? editingCat : c));
+              <button onClick={async () => {
+                await updateCategory(editingCat);
                 setEditingCat(null);
                 alert('Category updated successfully!');
               }} className="px-5 py-2 bg-[#50007c] text-white font-black rounded-xl cursor-pointer shadow-md">

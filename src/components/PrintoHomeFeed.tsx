@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Clock, 
   BookOpen, 
@@ -60,6 +60,7 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
 
   const { websiteImages, reviews: firestoreReviews, addPublicReview, deleteReview } = useAdmin();
   const approvedReviews = firestoreReviews.filter(r => r.approved !== false);
+  const reviewsScrollRef = useRef<HTMLDivElement>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [newReviewName, setNewReviewName] = useState('');
   const [newReviewPhone, setNewReviewPhone] = useState('');
@@ -605,13 +606,13 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-orange-500 text-white rounded-full text-[10px] font-black uppercase tracking-wider shadow-2xs">
                 <Clock className="w-3 h-3" />
-                <span>Shivani Graphics Express Counter</span>
+                <span>Ready in Minutes · Express Counter</span>
               </div>
               <h2 className="text-lg sm:text-xl font-black text-slate-900 mt-1 flex items-center gap-2">
-                <span>⚡ Custom Printing Studio & Express Counter</span>
+                <span>⚡ Instant Express Print Studio & Counter Delivery</span>
               </h2>
               <p className="text-xs text-slate-600 mt-0.5">
-                Instant printing ready while you wait at our Mahavir Enclave, New Delhi studio
+                Get urgent visiting cards, rubber stamps, ID cards & photo mugs printed instantly while you wait at Mahavir Enclave, New Delhi.
               </p>
             </div>
 
@@ -742,180 +743,7 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
         </div>
       </section>
 
-      {/* REAL CUSTOMER REVIEWS SECTION WITH "WRITE A REVIEW" BUTTON */}
-      <section className="px-4 sm:px-6 max-w-7xl mx-auto pt-4">
-        <div className="bg-gradient-to-br from-purple-50 via-white to-slate-50 rounded-3xl p-6 sm:p-8 border border-purple-100 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-[#50007c] rounded-full text-[11px] font-black uppercase tracking-wider">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                <span>Verified Customer Experiences</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">
-                What Our Clients Say About Shivani Graphics
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-                Real reviews from walk-in customers and businesses across Delhi NCR
-              </p>
-            </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="button"
-              onClick={() => setIsReviewModalOpen(true)}
-              className="px-5 py-3 bg-[#50007c] hover:bg-[#3e0061] text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-purple-900/20 flex items-center gap-2 cursor-pointer self-start sm:self-auto"
-            >
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span>Write a Review</span>
-            </motion.button>
-          </div>
-
-          {/* Customer Printed Photos Gallery */}
-          {approvedReviews.some(r => r.photo) && (
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-              <div className="flex items-center gap-2">
-                <Camera className="w-4 h-4 text-[#50007c]" />
-                <h5 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Customer Printed Photos Gallery ({approvedReviews.filter(r => r.photo).length})</h5>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                {approvedReviews.filter(r => r.photo).map((rev, idx) => (
-                  <div key={idx} className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-slate-200 shrink-0 bg-slate-50 group shadow-2xs">
-                    <img src={rev.photo} alt={rev.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 text-white text-[10px] truncate font-medium">
-                      {rev.name}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Reviews Slider / Carousel */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700">
-                Showing Verified Reviews from <span className="text-[#50007c] font-black">{approvedReviews.length}</span> Customers ({approvedReviews.length} people reviewed)
-              </span>
-              {approvedReviews.length > 1 && (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setReviewSlideIndex(prev => (prev === 0 ? approvedReviews.length - 1 : prev - 1))}
-                    className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs transition-colors cursor-pointer"
-                    aria-label="Previous Review"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <span className="text-xs font-bold text-slate-600">
-                    {reviewSlideIndex + 1} / {approvedReviews.length}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setReviewSlideIndex(prev => (prev === approvedReviews.length - 1 ? 0 : prev + 1))}
-                    className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs transition-colors cursor-pointer"
-                    aria-label="Next Review"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {approvedReviews.length === 0 ? (
-              <div className="text-center py-10 bg-white rounded-2xl border border-slate-200 p-6">
-                <Star className="w-8 h-8 text-amber-400 fill-amber-100 mx-auto mb-2" />
-                <p className="font-bold text-slate-800 text-sm">No reviews yet</p>
-                <p className="text-xs text-slate-500 mt-1">Be the first customer to share your experience!</p>
-              </div>
-            ) : (
-              <div className="relative overflow-hidden">
-                <AnimatePresence mode="wait">
-                  {(() => {
-                    const currentReview = approvedReviews[reviewSlideIndex % approvedReviews.length];
-                    if (!currentReview) return null;
-                    return (
-                      <motion.div
-                        key={reviewSlideIndex}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.2 }}
-                        className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center justify-between"
-                      >
-                        <div className="space-y-3 flex-1">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1 text-amber-500">
-                              {[...Array(Number(currentReview.rating) || 5)].map((_, i) => (
-                                <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                              ))}
-                            </div>
-                            <span className="text-[10px] font-bold text-slate-400">
-                              {currentReview.date || 'Verified Review'}
-                            </span>
-                          </div>
-
-                          <p className="text-sm sm:text-base text-slate-800 leading-relaxed italic font-medium">
-                            "{currentReview.review}"
-                          </p>
-
-                          <div className="flex items-center gap-3 pt-2">
-                            <div>
-                              <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                                <span>{currentReview.name}</span>
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                              </h4>
-                              <p className="text-[10px] text-[#50007c] font-semibold">
-                                {'Custom Printing & Signage'}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2 ml-auto">
-                              <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-md">
-                                ✓ Verified Buyer
-                              </span>
-                              {currentReview.id && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteReview(currentReview.id)}
-                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                                  title="Delete Review"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {currentReview.photo && (
-                          <div className="w-full md:w-48 h-40 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 shrink-0 shadow-xs">
-                            <img src={currentReview.photo} alt="Customer print upload" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                      </motion.div>
-                    );
-                  })()}
-                </AnimatePresence>
-
-                {/* Dot Indicators */}
-                {firestoreReviews.length > 1 && (
-                  <div className="flex items-center justify-center gap-1.5 mt-4">
-                    {firestoreReviews.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setReviewSlideIndex(idx)}
-                        className={`h-2 rounded-full transition-all cursor-pointer ${idx === (reviewSlideIndex % firestoreReviews.length) ? 'w-6 bg-[#50007c]' : 'w-2 bg-slate-300'}`}
-                        aria-label={`Go to slide ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* 6. TRUST & STORE STRENGTHS (Clean, Non-congested 4-Card Grid) */}
       <section className="px-4 sm:px-6 max-w-7xl mx-auto">
@@ -996,6 +824,115 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
             </a>
           </div>
         </div>
+      </section>
+
+      {/* Customer Reviews & Testimonials Section */}
+      <section className="px-4 sm:px-6 max-w-7xl mx-auto py-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-2">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" /> 4.9 / 5.0 Rating Across Delhi NCR
+            </div>
+            <h2 className="text-lg sm:text-2xl font-black text-slate-900">
+              Trusted by Leading Businesses & Retail Customers
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">Real feedback from verified clients who got 5-minute printing & urgent signage at Mahavir Enclave.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (reviewsScrollRef.current) {
+                    reviewsScrollRef.current.scrollBy({ left: -340, behavior: 'smooth' });
+                  }
+                }}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (reviewsScrollRef.current) {
+                    reviewsScrollRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+                  }
+                }}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsReviewModalOpen(true)}
+              className="px-4 py-2.5 bg-[#50007c] hover:bg-[#3e0061] text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer shrink-0"
+            >
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span>Write a Review</span>
+            </button>
+          </div>
+        </div>
+
+        {approvedReviews.length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center space-y-2">
+            <p className="text-sm font-bold text-slate-700">No reviews published yet.</p>
+            <p className="text-xs text-slate-500">Be the first to share your experience with Shivani Graphics!</p>
+            <button
+              type="button"
+              onClick={() => setIsReviewModalOpen(true)}
+              className="mt-2 px-4 py-2 bg-[#50007c] text-white font-bold text-xs rounded-xl cursor-pointer"
+            >
+              Add First Review
+            </button>
+          </div>
+        ) : (
+          <div 
+            ref={reviewsScrollRef}
+            className="flex gap-4 overflow-x-auto scrollbar-none pb-4 snap-x snap-mandatory"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            {approvedReviews.map((rev, index) => (
+              <div 
+                key={rev.id || index} 
+                className="min-w-[300px] sm:min-w-[340px] max-w-[380px] shrink-0 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow snap-start"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${i < (rev.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-slate-400 font-medium">{rev.date || 'Recent'}</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed italic">
+                    "{rev.review}"
+                  </p>
+                  {rev.photo && (
+                    <div className="rounded-xl overflow-hidden w-20 h-20 border border-slate-200">
+                      <img src={rev.photo} alt="Customer print work" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <div>
+                    <p className="text-xs font-black text-slate-900">{rev.name}</p>
+                    <p className="text-[10px] text-slate-500">Verified Customer · Delhi NCR</p>
+                  </div>
+                  <span className="text-[10px] bg-purple-50 text-[#50007c] font-bold px-2 py-0.5 rounded">
+                    Verified Purchase
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 8. Frequently Asked Questions Section */}

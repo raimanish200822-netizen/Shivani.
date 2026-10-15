@@ -9,7 +9,7 @@ interface AdminLoginProps {
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToWebsite }) => {
   const { login } = useAdmin();
   const [email, setEmail] = useState('yashroy@gmail.com');
-  const [password, setPassword] = useState('yash@2008');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState<AdminUser['role']>('Super Admin');
   
   const [step, setStep] = useState<'credentials' | 'otp' | 'forgot'>('credentials');
@@ -91,7 +91,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToWebsite }) => {
     setTimeout(() => {
       alert('Security Reset link sent to Yash Roy (+91-9958655713). Please use master credentials.');
       setStep('credentials');
-      setPassword('yash@2008');
+      setPassword('');
     }, 1500);
   };
 

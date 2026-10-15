@@ -184,7 +184,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             <span className="text-[10px] text-slate-500 mt-0.5">Supports JPG, PNG, WEBP (Android, iOS, Tablets & PC)</span>
             <input
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/jpg"
+              accept="image/*"
               onChange={handleFileChange}
               className="hidden"
             />
