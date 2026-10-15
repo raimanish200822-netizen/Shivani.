@@ -133,19 +133,14 @@ export const Header: React.FC<HeaderProps> = ({
                     SG
                   </div>
                 </div>
-                <span className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[9px] font-black px-1 rounded-md shadow-xs">
-                  SG
-                </span>
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center font-sans font-black text-xl sm:text-2xl tracking-tight leading-none">
                   <span className="text-[#50007c]">Shivani</span>
                   <span className="text-orange-500 ml-1">Graphics</span>
                 </div>
-                <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold tracking-tight mt-0.5 group-hover:text-orange-600 transition-colors flex items-center gap-1">
-                  <span>⚡ 5-Min Print Press</span>
-                  <span className="text-purple-400">·</span>
-                  <span>Delhi NCR</span>
+                <span className="text-[9px] sm:text-[10px] text-[#50007c] font-black tracking-tight mt-0.5 group-hover:text-orange-600 transition-colors">
+                  Custom Printing Studio
                 </span>
               </div>
             </button>

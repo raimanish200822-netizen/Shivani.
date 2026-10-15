@@ -1132,6 +1132,100 @@ export const PRODUCTS: ProductItem[] = [
     }
   },
 
+  // Additional Apparel Product 3: Sports Jerseys
+  {
+    id: 'sports-jerseys-custom',
+    slug: 'sports-jerseys-custom',
+    title: 'Custom Sports Jerseys & Cricket Uniforms',
+    subtitle: 'Printed in 24 Hours · Dry-Fit Breathable Microfiber',
+    featureBadge: 'Dry-Fit Tech',
+    category: 'apparel-uniforms',
+    categoryLabel: 'Apparel & Uniform Printing',
+    shortDescription: 'Custom full-sublimation sports jerseys for cricket, football, and tournaments with breathable dry-fit mesh fabric.',
+    detailedDescription: 'Gear up your team with professional custom sublimation sports jerseys. Made from 100% moisture-wicking dry-fit microfiber mesh fabric with vibrant all-over sublimation printing that never fades or peels.',
+    rating: 4.96,
+    reviewCount: 510,
+    dispatchTag: '⚡ Same-Day Delhi NCR Dispatch',
+    badge: 'Tournament Choice',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1517649763962-0c6232660102?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Custom sports jerseys and athletic apparel',
+        caption: 'Full-Sublimation Dry-Fit Cricket & Sports Jersey'
+      }
+    ],
+    specs: [
+      { label: 'Fabric', value: '160 GSM Dry-Fit Anti-Sweat Microfiber Mesh' },
+      { label: 'Printing', value: 'Full-Color Heat Sublimation' }
+    ],
+    config: {
+      sizes: [
+        { id: 'jersey-std', name: 'Standard Athletic Fit', priceMultiplier: 1.0, description: 'Comfortable sports cut' }
+      ],
+      materials: [
+        { id: 'microfiber', name: '160 GSM Dry-Fit Mesh', priceMultiplier: 1.0, description: 'Sweat absorbing cool fabric' }
+      ],
+      finishes: [
+        { id: 'sublimation', name: 'All-Over Sublimation', priceMultiplier: 1.0, description: 'Permanent dye printing' }
+      ],
+      sides: [
+        { id: 'front-back', name: 'Front + Back Name & Number', priceMultiplier: 1.0, description: 'Custom player names and numbers' }
+      ],
+      quantities: [
+        { qty: 11, popular: true },
+        { qty: 25, popular: false }
+      ]
+    }
+  },
+
+  // Additional Stamps Product 3: Metal Name Badges
+  {
+    id: 'metal-engraved-name-badges',
+    slug: 'metal-engraved-name-badges',
+    title: 'Metal Name Badges & Engraved ID Pins',
+    subtitle: 'Ready in 2 Hours · Brushed Brass & Silver Finish',
+    featureBadge: 'Executive Badge',
+    category: 'stamps-rubber',
+    categoryLabel: 'Stamps, Badges & ID Solutions',
+    shortDescription: 'Professional engraved metal staff name badges with magnetic backing or pin fasteners for corporate offices, hotels, and hospitals.',
+    detailedDescription: 'Enhance staff identification with premium laser-engraved metal name badges. Available in brushed gold, silver, and matte white finishes with secure magnetic fasteners that do not damage uniform fabric.',
+    rating: 4.98,
+    reviewCount: 320,
+    dispatchTag: '⚡ Same-Day Counter Pickup',
+    badge: 'Corporate Pick',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Engraved metal staff name badges',
+        caption: 'Brushed Metal Staff Name Badge with Magnetic Backing'
+      }
+    ],
+    specs: [
+      { label: 'Material', value: 'Anodized Aluminum / Brass with Laser Engraving' },
+      { label: 'Fastener', value: 'Strong Neodymium Magnetic Clasp or Pin' }
+    ],
+    config: {
+      sizes: [
+        { id: 'badge-standard', name: 'Standard Name Badge (70 × 20 mm)', priceMultiplier: 1.0, description: 'Name and designation plate' }
+      ],
+      materials: [
+        { id: 'brushed-silver', name: 'Brushed Silver Metal', priceMultiplier: 1.0, description: 'Sleek modern metallic look' },
+        { id: 'brushed-gold', name: 'Brushed Gold Brass', priceMultiplier: 1.15, description: 'Executive gold finish' }
+      ],
+      finishes: [
+        { id: 'magnetic', name: 'Magnetic Backing (No Pin Holes)', priceMultiplier: 1.0, description: 'Clothes friendly magnet' }
+      ],
+      sides: [
+        { id: 'front', name: 'Front Engraving', priceMultiplier: 1.0, description: 'Name & title' }
+      ],
+      quantities: [
+        { qty: 1, popular: true },
+        { qty: 5, popular: false },
+        { qty: 20, popular: false }
+      ]
+    }
+  },
+
   // 3.4a Dedicated Section: Custom Mugs & Magic Coffee Mugs
   {
     id: 'custom-mugs-section',

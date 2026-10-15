@@ -30,71 +30,40 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-      setErrorMsg('Please select a valid image file (JPG, JPEG, PNG, or WEBP).');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg('Image file size is too large. Please select an image under 10MB.');
+    // Validate file size (max 15MB)
+    if (file.size > 15 * 1024 * 1024) {
+      setErrorMsg('Image file size is too large. Please select an image under 15MB.');
       return;
     }
 
     setErrorMsg('');
     setUploading(true);
-    setProgress(0);
-    setStatusMessage('Preparing upload to Firebase Storage...');
+    setProgress(50);
+    setStatusMessage('Processing gallery image...');
 
     try {
-      const sanitizedName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
-      const storageRef = ref(storage, `shivanigraphics/${folder}/${Date.now()}_${sanitizedName}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          setProgress(prog);
-          setStatusMessage(`Uploading: ${prog}% completed`);
-        },
-        (error) => {
-          console.error('Firebase Storage upload error:', error);
-          setUploading(false);
-          // Fallback to compressed base64 data URL if storage upload fails due to rules/permissions
-          const reader = new FileReader();
-          reader.onload = (uploadEvent) => {
-            const base64Result = uploadEvent.target?.result as string;
-            if (base64Result) {
-              onChange(base64Result);
-              setStatusMessage('Uploaded successfully (Local Compressed Fallback)');
-            }
-          };
-          reader.readAsDataURL(file);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        const base64Result = uploadEvent.target?.result as string;
+        if (base64Result) {
           setUploading(false);
           setProgress(100);
-          setStatusMessage('Successfully uploaded to Firebase Storage!');
-          onChange(downloadURL);
-        }
-      );
-    } catch (err) {
-      console.error('Upload exception:', err);
-      setUploading(false);
-      // Fallback reader
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const res = ev.target?.result as string;
-        if (res) {
-          onChange(res);
-          setStatusMessage('Uploaded successfully (Direct Fallback)');
+          onChange(base64Result);
+          setStatusMessage('Successfully uploaded from gallery!');
+        } else {
+          setUploading(false);
+          setErrorMsg('Failed to process image.');
         }
       };
+      reader.onerror = () => {
+        setUploading(false);
+        setErrorMsg('Failed to read image file from gallery.');
+      };
       reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Gallery upload error:', err);
+      setUploading(false);
+      setErrorMsg('Failed to upload image.');
     }
   };
 
