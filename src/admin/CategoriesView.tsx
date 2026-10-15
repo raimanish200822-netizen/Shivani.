@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { Layers, Plus, Edit3, Trash2, X } from 'lucide-react';
+import { Layers, Plus, Edit3, Trash2, X, Search } from 'lucide-react';
 import { CATEGORIES } from '../data/products';
 
 export const CategoriesView: React.FC = () => {
   const [categories, setCategories] = useState(CATEGORIES);
+  const [search, setSearch] = useState('');
   const [editingCat, setEditingCat] = useState<any | null>(null);
+
+  const filteredCategories = categories.filter(c => 
+    c.label.toLowerCase().includes(search.toLowerCase()) || 
+    c.id.toLowerCase().includes(search.toLowerCase()) ||
+    (c.description && c.description.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
     <div className="space-y-6">
@@ -13,8 +20,19 @@ export const CategoriesView: React.FC = () => {
         <p className="text-xs text-slate-500">Manage category titles, card images, and navigation links for the public website catalog.</p>
       </div>
 
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex items-center gap-3">
+        <Search className="w-4 h-4 text-slate-400 ml-1" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search categories by name or ID..."
+          className="w-full text-xs focus:outline-none font-medium"
+        />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((cat) => (
+        {filteredCategories.map((cat) => (
           <div key={cat.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="px-2.5 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-black rounded-md font-mono">{cat.id}</span>

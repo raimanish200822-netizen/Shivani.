@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { MessageCircle, X, Send, Clock, Sparkles, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WHATSAPP_PRIMARY } from '../utils/whatsapp';
+import { useAdmin } from '../context/AdminContext';
 
 export const FloatingWhatsApp: React.FC = () => {
+  const { siteLogo } = useAdmin();
   const [isOpen, setIsOpen] = useState(false);
   const [userMessage, setUserMessage] = useState('');
   const [isAgentTyping, setIsAgentTyping] = useState(false);
@@ -84,7 +86,7 @@ export const FloatingWhatsApp: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-white border border-white/30 flex items-center justify-center shrink-0">
-                    <img src="https://img.sanishtech.com/u/65c843b363e7b4f65c6efab5a16570b4.jpg" alt="Logo" className="w-full h-full object-cover" />
+                    <img src={siteLogo} alt="Logo" className="w-full h-full object-cover" />
                   </div>
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-300 border-2 border-emerald-700 rounded-full" />
                 </div>
@@ -126,7 +128,7 @@ export const FloatingWhatsApp: React.FC = () => {
               {/* Agent Welcome Message */}
               <div className="flex items-start gap-2 max-w-[88%]">
                 <div className="w-7 h-7 rounded-full overflow-hidden bg-white shadow-xs shrink-0 flex items-center justify-center border border-emerald-200">
-                  <img src="https://img.sanishtech.com/u/65c843b363e7b4f65c6efab5a16570b4.jpg" alt="Logo" className="w-full h-full object-cover" />
+                  <img src={siteLogo} alt="Logo" className="w-full h-full object-cover" />
                 </div>
                 <div className="bg-white p-3 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 space-y-1">
                   <p className="font-semibold text-slate-800 leading-relaxed">
@@ -143,28 +145,39 @@ export const FloatingWhatsApp: React.FC = () => {
                 </div>
               </div>
 
-              {/* Dynamic 'Support Agent is typing...' component */}
+              {/* Dynamic 'Support Agent is typing...' component with Lottie-style bounce animation */}
               <AnimatePresence>
                 {isAgentTyping && (
                   <motion.div
                     initial={{ opacity: 0, y: 8, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
                     className="flex items-center gap-2"
                   >
-                    <div className="w-7 h-7 rounded-full overflow-hidden bg-white shadow-xs shrink-0 flex items-center justify-center border border-emerald-200">
-                      <img src="https://img.sanishtech.com/u/65c843b363e7b4f65c6efab5a16570b4.jpg" alt="Logo" className="w-full h-full object-cover" />
+                    <div className="w-7 h-7 rounded-full overflow-hidden bg-white shadow-xs shrink-0 flex items-center justify-center border border-emerald-300 ring-2 ring-emerald-500/20">
+                      <img src={siteLogo} alt="Logo" className="w-full h-full object-cover" />
                     </div>
-                    <div className="bg-white px-3.5 py-2.5 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 flex items-center gap-2">
-                      <span className="text-[11px] font-semibold text-slate-600">
+                    <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-xs shadow-md border border-emerald-100 flex items-center gap-2.5 relative overflow-hidden">
+                      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 animate-pulse" />
+                      <span className="text-[11px] font-bold text-slate-700">
                         Support Agent is typing
                       </span>
-                      <span className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce" style={{ animationDelay: '300ms' }} />
-                      </span>
+                      <div className="flex items-center gap-1">
+                        {[0, 150, 300].map((delay, i) => (
+                          <motion.span
+                            key={i}
+                            animate={{ y: [0, -6, 0], scale: [1, 1.25, 1] }}
+                            transition={{
+                              duration: 0.6,
+                              repeat: Infinity,
+                              delay: delay / 1000,
+                              ease: 'easeInOut'
+                            }}
+                            className="w-2 h-2 rounded-full bg-emerald-600 shadow-2xs"
+                          />
+                        ))}
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -215,7 +228,7 @@ export const FloatingWhatsApp: React.FC = () => {
             {/* Trust disclaimer */}
             <div className="px-3 py-1.5 bg-slate-100 text-center text-[10px] text-slate-500 flex items-center justify-center gap-1">
               <Sparkles className="w-3 h-3 text-amber-500" />
-              <span>Official WhatsApp: +91-9810157695 · Mahavir Enclave, New Delhi</span>
+              <span>Mahavir Enclave, New Delhi · Instant Support</span>
             </div>
 
           </motion.div>

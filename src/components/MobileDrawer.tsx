@@ -28,6 +28,7 @@ import { ProductItem } from '../types';
 import { CATEGORIES } from '../data/products';
 import { WHATSAPP_PRIMARY, PHONE_SECONDARY, SUPPORT_EMAIL, STORE_ADDRESS } from '../utils/whatsapp';
 import { PolicyRoute } from './Footer';
+import { useAdmin } from '../context/AdminContext';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -56,6 +57,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onNavigateAbout,
   onNavigatePolicy
 }) => {
+  const { siteLogo } = useAdmin();
   const getCategoryIcon = (id: string) => {
     switch (id) {
       case 'paper-documents': return <FileText className="w-4 h-4 text-purple-600" />;
@@ -140,7 +142,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <div className="p-4 bg-[#50007c] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-white flex items-center justify-center shadow-xs">
-                  <img src="https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg" alt="Shivani Graphics" className="w-full h-full object-cover" />
+                  <img src={siteLogo} alt="Shivani Graphics" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-black text-sm tracking-tight leading-none">

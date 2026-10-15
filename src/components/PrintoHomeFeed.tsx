@@ -608,7 +608,7 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
                 <span>Shivani Graphics Express Counter</span>
               </div>
               <h2 className="text-lg sm:text-xl font-black text-slate-900 mt-1 flex items-center gap-2">
-                <span>⚡ 5-Minute Instant Walk-in Counter</span>
+                <span>⚡ Custom Printing Studio & Express Counter</span>
               </h2>
               <p className="text-xs text-slate-600 mt-0.5">
                 Instant printing ready while you wait at our Mahavir Enclave, New Delhi studio

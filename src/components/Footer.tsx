@@ -15,6 +15,8 @@ import {
   PRINCIPAL_ADDRESS
 } from '../utils/whatsapp';
 
+import { useAdmin } from '../context/AdminContext';
+
 export type PolicyRoute = 'terms' | 'privacy' | 'refund-policy' | 'artwork-guidelines' | 'contact';
 
 interface FooterProps {
@@ -38,6 +40,7 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigateAdmin,
   onNavigatePolicy
 }) => {
+  const { siteLogo } = useAdmin();
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const toggleSection = (id: string) => {
@@ -61,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="flex items-center gap-2.5">
             <div className="w-11 h-11 rounded-2xl bg-[#50007c] flex items-center justify-center overflow-hidden shadow-sm border border-purple-200">
               <img 
-                src="https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg" 
+                src={siteLogo} 
                 alt="Shivani Graphics" 
                 className="w-full h-full object-cover"
                 onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
@@ -566,18 +569,6 @@ export const Footer: React.FC<FooterProps> = ({
           >
             Contact Us
           </button>
-          {onNavigateAdmin && (
-            <>
-              <span className="text-slate-300">·</span>
-              <button 
-                type="button" 
-                onClick={onNavigateAdmin} 
-                className="hover:text-[#50007c] font-black text-[#50007c] hover:underline cursor-pointer"
-              >
-                ⚙️ Admin Panel
-              </button>
-            </>
-          )}
         </div>
 
 
@@ -627,10 +618,8 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
 
         {/* Payment badges */}
-        <div className="flex items-center justify-center gap-4 text-xs font-bold text-slate-500">
-          <span className="px-2 py-0.5 bg-slate-100 rounded text-blue-900 font-black">VISA</span>
-          <span className="px-2 py-0.5 bg-slate-100 rounded text-red-600 font-black">Mastercard</span>
-          <span className="px-2 py-0.5 bg-slate-100 rounded text-emerald-700 font-black">UPI / GPay</span>
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-500">
+          <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-black">⚡ UPI (GPay / PhonePe / Paytm / QR)</span>
         </div>
 
         {/* Copyright */}

@@ -847,8 +847,8 @@ export const PRODUCTS: ProductItem[] = [
     title: 'T-Shirt Printing (DTF / Screen Cotton Merch)',
     subtitle: 'Printed in 20-30 Mins · 180 GSM Bio-Washed Cotton',
     featureBadge: 'DTF Technology',
-    category: 'custom-promotional',
-    categoryLabel: 'Custom & Promotional Printing',
+    category: 'apparel-uniforms',
+    categoryLabel: 'Apparel & Uniform Printing',
     shortDescription: 'Custom printed round-neck and polo t-shirts in 100% bio-washed cotton with high-density DTF graphics.',
     detailedDescription: 'Dress your team or event in style. Premium 180 GSM pre-shrunk combed cotton t-shirts printed with state-of-the-art Direct-to-Film (DTF) graphics that will not crack, peel, or fade even after 50+ machine washes. Available in sizes XS to 3XL in Black, White, Navy, Maroon, and Grey.',
     rating: 4.95,
@@ -901,8 +901,8 @@ export const PRODUCTS: ProductItem[] = [
     title: 'Stamps, Rubber Stamps, and Stamp Pads',
     subtitle: 'Ready in 15-30 Mins · Self-Inking Automated Seals',
     featureBadge: '15-Min Ready',
-    category: 'custom-promotional',
-    categoryLabel: 'Custom & Promotional Printing',
+    category: 'stamps-rubber',
+    categoryLabel: 'Stamps, Badges & ID Solutions',
     shortDescription: 'Automated self-inking rubber stamps, director seals, dater stamps, and official banking stamp pads made in 15 minutes.',
     detailedDescription: 'Authorize company paperwork, GST invoices, and banking cheques instantly. Precision laser-engraved rubber stamps housed in smooth spring-action self-inking mechanisms. Clean, smudge-free impressions lasting over 10,000 stamps before needing an ink refill. Pre-inked stamp pads and dater stamps available.',
     rating: 4.97,
@@ -944,6 +944,190 @@ export const PRODUCTS: ProductItem[] = [
         { qty: 1, popular: true },
         { qty: 2, popular: false },
         { qty: 5, popular: false }
+      ]
+    }
+  },
+
+  // Additional Apparel Product
+  {
+    id: 'corporate-hoodies-sweatshirts',
+    slug: 'corporate-hoodies-sweatshirts',
+    title: 'Custom Hoodies & Winter Sweatshirts',
+    subtitle: 'Printed in 24 Hours · 320 GSM Heavy Fleece Cotton',
+    featureBadge: 'Winter Merch',
+    category: 'apparel-uniforms',
+    categoryLabel: 'Apparel & Uniform Printing',
+    shortDescription: 'Warm 320 GSM fleece cotton custom printed hoodies and sweatshirts with kangaroo pockets and high-definition chest branding.',
+    detailedDescription: 'Stay warm and stylish with custom branded winter hoodies and sweatshirts. Crafted from 320 GSM super-combed bio-washed fleece cotton with double-layered hoods, ribbed cuffs, and durable DTF or screen-printed corporate graphics.',
+    rating: 4.96,
+    reviewCount: 420,
+    dispatchTag: '⚡ Same-Day Dispatch in Delhi NCR',
+    badge: 'Winter Favorite',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Custom printed fleece cotton hoodies',
+        caption: '320 GSM Heavy Fleece Cotton Hoodie with Custom Chest Print'
+      }
+    ],
+    specs: [
+      { label: 'Fabric', value: '320 GSM Super-Combed Cotton Fleece' },
+      { label: 'Features', value: 'Kangaroo Pocket, Matching Drawstrings, Ribbed Hem' }
+    ],
+    config: {
+      sizes: [
+        { id: 'hoodie-standard', name: 'Standard Fleece Hoodie', priceMultiplier: 1.0, description: 'Warm hooded sweatshirt with pocket' }
+      ],
+      materials: [
+        { id: 'cotton-fleece', name: '320 GSM Heavy Fleece', priceMultiplier: 1.0, description: 'Super warm interior' }
+      ],
+      finishes: [
+        { id: 'dtf', name: 'High-Definition DTF Print', priceMultiplier: 1.0, description: 'Vibrant chest print' }
+      ],
+      sides: [
+        { id: 'front', name: 'Chest Print', priceMultiplier: 1.0, description: 'Front logo' }
+      ],
+      quantities: [
+        { qty: 1, popular: true },
+        { qty: 10, popular: false }
+      ]
+    }
+  },
+
+  // Additional Stamps & ID Solutions Product
+  {
+    id: 'id-card-lanyards-badges',
+    slug: 'id-card-lanyards-badges',
+    title: 'ID Card Lanyards & Sublimated Neck Straps',
+    subtitle: 'Printed in 2 Hours · 20mm Satin Dori with Metal Hook',
+    featureBadge: 'ID Solutions',
+    category: 'stamps-rubber',
+    categoryLabel: 'Stamps, Badges & ID Solutions',
+    shortDescription: 'Custom printed satin neck lanyards (16mm/20mm) with company branding, safety locks, and sturdy metal dog hooks.',
+    detailedDescription: 'Professional corporate and school identification lanyards. Printed using full-color heat sublimation on silky smooth satin ribbon that never fades. Equipped with swivel metal lobster clips, plastic safety breakaway locks, and badge holders.',
+    rating: 4.98,
+    reviewCount: 890,
+    dispatchTag: '⚡ Same-Day Delivery in Delhi NCR',
+    badge: 'Event Essential',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Custom printed satin neck lanyards and ID badges',
+        caption: 'Full-Color Sublimated Satin Lanyard with Metal Hook & ID Holder'
+      }
+    ],
+    specs: [
+      { label: 'Ribbon Width', value: '16mm or 20mm Silky Smooth Satin Ribbon' },
+      { label: 'Hardware', value: 'Swivel Metal Lobster Hook / Bulldog Clip + Safety Breakaway' }
+    ],
+    config: {
+      sizes: [
+        { id: 'lanyard-20mm', name: '20mm Satin Lanyard with Metal Hook & Holder', priceMultiplier: 1.0, description: 'Standard corporate neck strap' }
+      ],
+      materials: [
+        { id: 'satin-ribbon', name: 'Silky Smooth Sublimated Satin', priceMultiplier: 1.0, description: 'Full color printing both sides' }
+      ],
+      finishes: [
+        { id: 'breakaway', name: 'Neck Safety Breakaway Clip', priceMultiplier: 1.0, description: 'Pulls apart safely under tension' }
+      ],
+      sides: [
+        { id: 'double', name: 'Double-Sided Continuous Print', priceMultiplier: 1.0, description: 'Full length logo branding' }
+      ],
+      quantities: [
+        { qty: 25, popular: true },
+        { qty: 100, popular: false }
+      ]
+    }
+  },
+
+  // Additional Apparel Product 2
+  {
+    id: 'corporate-polo-tshirts',
+    slug: 'corporate-polo-tshirts',
+    title: 'Polo Collar Corporate T-Shirts (Matty Cotton)',
+    subtitle: 'Printed in 24 Mins · 220 GSM Breathable Matty Fabric',
+    featureBadge: 'Executive Polo',
+    category: 'apparel-uniforms',
+    categoryLabel: 'Apparel & Uniform Printing',
+    shortDescription: 'Formal executive polo collar t-shirts in breathable 220 GSM honeycomb matty cotton with embroidered or DTF chest logos.',
+    detailedDescription: 'Professional corporate uniform t-shirts featuring a structured collar, button placket, and moisture-wicking honeycomb matty cotton weave. Ideal for sales teams, hospitality staff, corporate events, and tech companies.',
+    rating: 4.97,
+    reviewCount: 650,
+    dispatchTag: '⚡ Same-Day Store Pickup',
+    badge: 'Executive Best',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Polo collar corporate t-shirts on display',
+        caption: '220 GSM Honeycomb Matty Polo T-Shirt with Custom Chest Branding'
+      }
+    ],
+    specs: [
+      { label: 'Fabric', value: '220 GSM Honeycomb Poly-Cotton Matty Weave' },
+      { label: 'Collar Style', value: 'Ribbed Knit Collar & Matching 3-Button Placket' }
+    ],
+    config: {
+      sizes: [
+        { id: 'polo-standard', name: 'Executive Polo T-Shirt', priceMultiplier: 1.0, description: 'Collared professional uniform' }
+      ],
+      materials: [
+        { id: 'matty-cotton', name: '220 GSM Honeycomb Matty', priceMultiplier: 1.0, description: 'Breathable textured weave' }
+      ],
+      finishes: [
+        { id: 'dtf-chest', name: 'High-Definition Chest Print', priceMultiplier: 1.0, description: 'Clean company logo' }
+      ],
+      sides: [
+        { id: 'front', name: 'Left Chest Emblem', priceMultiplier: 1.0, description: 'Standard corporate placement' }
+      ],
+      quantities: [
+        { qty: 5, popular: true },
+        { qty: 25, popular: false }
+      ]
+    }
+  },
+
+  // Additional Stamps Product 2
+  {
+    id: 'pocket-self-inking-stamp',
+    slug: 'pocket-self-inking-stamp',
+    title: 'Pocket Self-Inking Mobile Stamp & Stamp Pad',
+    subtitle: 'Ready in 15 Mins · Portable Flip-Action Seal',
+    featureBadge: 'Portable Seal',
+    category: 'stamps-rubber',
+    categoryLabel: 'Stamps, Badges & ID Solutions',
+    shortDescription: 'Compact pocket-sized mobile self-inking rubber stamp for doctors, chartered accountants, and travelling executives.',
+    detailedDescription: 'Never leave your official seal behind. Precision laser-engraved rubber stamp housed in a sleek pocket-sized flip-action casing with built-in ink pad. Clicks open instantly for clean, crisp document stamping.',
+    rating: 4.95,
+    reviewCount: 380,
+    dispatchTag: '⚡ 15-Minute Instant Counter Pickup',
+    badge: 'Travel Seal',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Pocket mobile self-inking stamp',
+        caption: 'Compact Pocket Flip-Action Seal with Built-in Ink Pad'
+      }
+    ],
+    specs: [
+      { label: 'Mechanism', value: 'Flip-Action Pocket Casing with Integrated Ink Pad' },
+      { label: 'Impression Size', value: '38 x 14 mm Rectangle' }
+    ],
+    config: {
+      sizes: [
+        { id: 'pocket-rect', name: 'Pocket Mobile Stamp (38 × 14 mm)', priceMultiplier: 1.0, description: 'Compact travel seal' }
+      ],
+      materials: [
+        { id: 'blue-ink', name: 'Professional Blue Ink', priceMultiplier: 1.0, description: 'Standard official ink' }
+      ],
+      finishes: [
+        { id: 'laser-engrave', name: 'Laser Polymer Engraving', priceMultiplier: 1.0, description: 'Ultra sharp text' }
+      ],
+      sides: [
+        { id: 'single', name: 'Single Face', priceMultiplier: 1.0, description: 'Clear impression' }
+      ],
+      quantities: [
+        { qty: 1, popular: true },
+        { qty: 3, popular: false }
       ]
     }
   },
@@ -1651,5 +1835,17 @@ export const CATEGORIES = [
     label: 'Finishing & Binding Services', 
     iconName: 'Layers', 
     description: 'Spiral, wiro & hard binding, lamination, creasing, die pouching, PVC smart cards, and 13x40 panoramic digital prints.' 
+  },
+  {
+    id: 'apparel-uniforms',
+    label: 'Apparel & Uniform Printing',
+    iconName: 'Shirt',
+    description: 'Round neck t-shirts, polo collar t-shirts, hoodies, corporate caps & aprons with DTF print.'
+  },
+  {
+    id: 'stamps-rubber',
+    label: 'Stamps, Badges & ID Solutions',
+    iconName: 'Stamp',
+    description: 'Self-inking pre-inked rubber stamps, pocket stamps, engraved acrylic nameplates & ID lanyards.'
   }
 ];

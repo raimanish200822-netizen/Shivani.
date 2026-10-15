@@ -186,6 +186,9 @@ interface AdminContextType {
   addPublicReview: (review: { name: string; rating: number; review: string; photo?: string }) => Promise<void>;
   auditLogs: AuditLog[];
   visitorStats: VisitorStats;
+  siteLogo: string;
+  updateSiteLogo: (url: string) => Promise<void>;
+  deleteSiteLogo: () => Promise<void>;
   logAction: (action: string, adminName: string) => void;
   isFirebaseLoading: boolean;
 }
@@ -201,6 +204,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [quotes, setQuotes] = useState<AdminQuote[]>([]);
+  const [siteLogo, setSiteLogo] = useState<string>('https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg');
   const [websiteImages, setWebsiteImages] = useState<WebsiteImage[]>([
     { id: 'img-1', title: 'Homepage Hero Main', section: 'Hero', url: 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=1200&q=80', alt: 'Visiting Cards', enabled: true, sortOrder: 1 },
     { id: 'img-2', title: 'Outdoor Flex Banner', section: 'Hero', url: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1200&q=80', alt: 'Flex Banners', enabled: true, sortOrder: 2 }
@@ -521,6 +525,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       handleFirestoreError(error, OperationType.GET, 'analytics/visitor_stats');
     });
 
+    // 13. Logo Branding Listener
+    const unsubLogo = onSnapshot(doc(db, 'settings', 'branding'), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().url) {
+        setSiteLogo(docSnap.data().url);
+      } else {
+        const defaultLogo = 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
+        setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true }).catch(() => {});
+        setSiteLogo(defaultLogo);
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'settings/branding');
+    });
+
     return () => {
       unsubProducts();
       unsubBanners();
@@ -535,8 +552,30 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       unsubFaqs();
       unsubAboutUs();
       unsubVisitors();
+      unsubLogo();
     };
   }, []);
+
+  const updateSiteLogo = async (url: string) => {
+    try {
+      setSiteLogo(url);
+      await setDoc(doc(db, 'settings', 'branding'), { url }, { merge: true });
+      logAction(`Updated site logo branding`, currentAdminUser?.name || 'Admin');
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, 'settings/branding');
+    }
+  };
+
+  const deleteSiteLogo = async () => {
+    try {
+      const defaultLogo = 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
+      setSiteLogo(defaultLogo);
+      await setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true });
+      logAction(`Reset site logo branding to default`, currentAdminUser?.name || 'Admin');
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, 'settings/branding');
+    }
+  };
 
   const login = (user: AdminUser) => {
     setIsAdminLoggedIn(true);
@@ -890,6 +929,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addPublicReview,
       auditLogs,
       visitorStats,
+      siteLogo,
+      updateSiteLogo,
+      deleteSiteLogo,
       logAction,
       isFirebaseLoading
     }}>

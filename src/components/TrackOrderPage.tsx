@@ -34,14 +34,26 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({ onBackToHome }) 
     setFoundOrder(null);
 
     const q = query.trim().toLowerCase();
+    const cleanQuery = q.replace(/[^a-z0-9]/g, '');
+    const cleanInputPhone = query.trim().replace(/[^0-9]/g, '');
 
     // 1. Search in Firestore / AdminContext orders first (Real Database Sync)
-    const match = firestoreOrders.find(o => 
-      o.id.toLowerCase() === q ||
-      o.id.toLowerCase().includes(q) ||
-      o.phone.includes(query.trim()) ||
-      o.customerName.toLowerCase().includes(q)
-    );
+    const match = firestoreOrders.find(o => {
+      const oId = (o.id || '').toLowerCase();
+      const oPhone = (o.phone || '').toLowerCase();
+      const oName = (o.customerName || '').toLowerCase();
+      const cleanOId = oId.replace(/[^a-z0-9]/g, '');
+      const cleanOPhone = oPhone.replace(/[^0-9]/g, '');
+
+      return (
+        oId === q ||
+        oId.includes(q) ||
+        q.includes(oId) ||
+        cleanOId === cleanQuery ||
+        (cleanInputPhone.length >= 4 && cleanOPhone.includes(cleanInputPhone)) ||
+        oName.includes(q)
+      );
+    });
 
     if (match) {
       setFoundOrder(match);
@@ -53,12 +65,22 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({ onBackToHome }) 
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const localOrders: AdminOrder[] = JSON.parse(saved);
-        const localMatch = localOrders.find(o => 
-          o.id.toLowerCase() === q ||
-          o.id.toLowerCase().includes(q) ||
-          o.phone.includes(query.trim()) ||
-          o.customerName.toLowerCase().includes(q)
-        );
+        const localMatch = localOrders.find(o => {
+          const oId = (o.id || '').toLowerCase();
+          const oPhone = (o.phone || '').toLowerCase();
+          const oName = (o.customerName || '').toLowerCase();
+          const cleanOId = oId.replace(/[^a-z0-9]/g, '');
+          const cleanOPhone = oPhone.replace(/[^0-9]/g, '');
+
+          return (
+            oId === q ||
+            oId.includes(q) ||
+            q.includes(oId) ||
+            cleanOId === cleanQuery ||
+            (cleanInputPhone.length >= 4 && cleanOPhone.includes(cleanInputPhone)) ||
+            oName.includes(q)
+          );
+        });
         if (localMatch) {
           setFoundOrder(localMatch);
           return;

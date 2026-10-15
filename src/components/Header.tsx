@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { ProductItem } from '../types';
 import { CATEGORIES } from '../data/products';
+import { useAdmin } from '../context/AdminContext';
 
 interface HeaderProps {
   products: ProductItem[];
@@ -36,6 +37,7 @@ interface HeaderProps {
   onNavigateTrack: () => void;
   onNavigateAbout: () => void;
   onNavigateAdmin?: () => void;
+  onOpenCompare?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -51,8 +53,10 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateHome,
   onNavigateTrack,
   onNavigateAbout,
-  onNavigateAdmin
+  onNavigateAdmin,
+  onOpenCompare
 }) => {
+  const { siteLogo } = useAdmin();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -117,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="relative">
                 <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#50007c] flex items-center justify-center text-white font-black text-sm sm:text-base shadow-md group-hover:scale-105 transition-transform overflow-hidden border-2 border-purple-200">
                   <img 
-                    src="https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg" 
+                    src={siteLogo} 
                     alt="Shivani Graphics Logo" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -242,6 +246,17 @@ export const Header: React.FC<HeaderProps> = ({
                 className="hidden md:inline-flex items-center gap-1 text-xs font-black text-[#50007c] bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors border border-purple-200"
               >
                 <span>⚙️ Admin Panel</span>
+              </button>
+            )}
+
+            {onOpenCompare && (
+              <button
+                type="button"
+                onClick={onOpenCompare}
+                className="hidden sm:inline-flex items-center gap-1 text-xs font-black text-orange-700 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors border border-orange-200 cursor-pointer"
+                title="Compare Products Side-by-Side"
+              >
+                <span>⚖️ Compare</span>
               </button>
             )}
 

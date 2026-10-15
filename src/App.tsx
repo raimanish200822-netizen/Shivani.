@@ -16,8 +16,10 @@ import { AdminPanel } from './components/AdminPanel';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { CartModal } from './components/CartModal';
 import { BulkQuoteModal } from './components/BulkQuoteModal';
+import { CompareModal } from './components/CompareModal';
 import { playWelcomeVoiceGreeting, hasBeenGreeted, isVoiceMuted } from './utils/voiceGreeting';
 import { addRecentlyViewedId } from './utils/recentlyViewed';
+import { useAdmin } from './context/AdminContext';
 
 // Dedicated Separate Sub-Pages (Replacing Popups/Modals)
 import { TermsPage } from './components/pages/TermsPage';
@@ -43,7 +45,9 @@ export type AppView =
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
-  const [activeProduct, setActiveProduct] = useState<ProductItem>(PRODUCTS[0]);
+  const { products } = useAdmin();
+  const [activeProductId, setActiveProductId] = useState<string>(PRODUCTS[0].id);
+  const activeProduct = products.find(p => p.id === activeProductId) || products[0] || PRODUCTS[0];
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Modals state
@@ -51,6 +55,7 @@ export default function App() {
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isHelpCenterModalOpen, setIsHelpCenterModalOpen] = useState(false);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   // Sync view from hash / path on initial load and handle browser back/forward buttons
   useEffect(() => {
@@ -67,7 +72,9 @@ export default function App() {
         'help',
         'admin'
       ];
-      if (validViews.includes(hash as AppView)) {
+      if (hash === 'adminlogin') {
+        setCurrentView('admin');
+      } else if (validViews.includes(hash as AppView)) {
         setCurrentView(hash as AppView);
       } else if (!hash) {
         // default view remains if not navigating back to root
@@ -117,7 +124,7 @@ export default function App() {
 
   const handleSelectProduct = (product: ProductItem) => {
     addRecentlyViewedId(product.id);
-    setActiveProduct(product);
+    setActiveProductId(product.id);
     setCurrentView('product');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -150,7 +157,7 @@ export default function App() {
 
       {/* 2. Main Printo-Style Navigation Header */}
       <Header
-        products={PRODUCTS}
+        products={products}
         selectedCategoryId={selectedCategoryId}
         onSelectProduct={handleSelectProduct}
         onSelectCategory={handleSelectCategory}
@@ -163,6 +170,7 @@ export default function App() {
         onNavigateTrack={() => navigateTo('track')}
         onNavigateAbout={() => navigateTo('about')}
         onNavigateAdmin={() => navigateTo('admin')}
+        onOpenCompare={() => setIsCompareOpen(true)}
       />
 
       {/* 3. Mobile Slide-out Drawer */}
@@ -171,7 +179,7 @@ export default function App() {
         onClose={() => setIsMobileMenuOpen(false)}
         selectedCategory={selectedCategoryId}
         onSelectCategory={handleSelectCategory}
-        products={PRODUCTS}
+        products={products}
         onSelectProduct={handleSelectProduct}
         onOpenStoreModal={() => navigateTo('contact')}
         onOpenHelpCenter={() => setIsHelpCenterModalOpen(true)}
@@ -201,7 +209,7 @@ export default function App() {
             {/* Home Feed */}
             {currentView === 'home' && (
               <PrintoHomeFeed
-                products={PRODUCTS}
+                products={products}
                 onSelectProduct={handleSelectProduct}
                 onSelectCategory={handleSelectCategory}
                 onOpenBulkModal={() => setIsBulkModalOpen(true)}
@@ -214,7 +222,7 @@ export default function App() {
             {currentView === 'product' && (
               <ProductDetailPage
                 product={activeProduct}
-                allProducts={PRODUCTS}
+                allProducts={products}
                 onBack={() => navigateTo('home')}
                 onSelectProduct={handleSelectProduct}
                 onAddToCart={handleAddToCart}
@@ -226,7 +234,7 @@ export default function App() {
             {currentView === 'category' && (
               <CategoryPage
                 categoryId={selectedCategoryId}
-                products={PRODUCTS}
+                products={products}
                 onSelectProduct={handleSelectProduct}
                 onSelectCategory={handleSelectCategory}
                 onBackToHome={() => navigateTo('home')}
@@ -334,6 +342,13 @@ export default function App() {
       <BulkQuoteModal
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
+      />
+
+      <CompareModal
+        isOpen={isCompareOpen}
+        onClose={() => setIsCompareOpen(false)}
+        allProducts={products}
+        onSelectProduct={handleSelectProduct}
       />
 
     </div>

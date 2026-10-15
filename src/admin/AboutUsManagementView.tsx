@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Building2, Plus, Trash2, Edit3, Check, X, Sparkles } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { AboutUsItem } from '../types';
+import { ImageUploader } from './ImageUploader';
 
 export const AboutUsManagementView: React.FC = () => {
   const { aboutUs, addAboutUs, updateAboutUs, deleteAboutUs } = useAdmin();
@@ -146,7 +147,7 @@ export const AboutUsManagementView: React.FC = () => {
       {/* Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <h3 className="text-base font-black text-slate-900">
                 {editingItem ? 'Edit About Us Section' : 'Add New About Us Section'}
@@ -210,26 +211,23 @@ export const AboutUsManagementView: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Image URL (Optional)</label>
-                  <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium"
-                    placeholder="https://images.unsplash.com/..."
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Display Sort Order</label>
-                  <input
-                    type="number"
-                    value={order}
-                    onChange={(e) => setOrder(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium"
-                  />
-                </div>
+              <div>
+                <ImageUploader
+                  value={imageUrl}
+                  onChange={(url) => setImageUrl(url)}
+                  label="About Us Section Image (Upload or Paste URL)"
+                  folder="about"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Display Sort Order</label>
+                <input
+                  type="number"
+                  value={order}
+                  onChange={(e) => setOrder(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium"
+                />
               </div>
 
               <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">

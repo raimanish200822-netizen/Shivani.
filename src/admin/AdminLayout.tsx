@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, ShoppingBag, Package, Image, FileText, Users, CreditCard, 
-  PackageOpen, Tag, Star, BarChart2, ShieldCheck, Settings, Activity, LogOut, Menu, X, ExternalLink, Layers, Database, HelpCircle, Building2 
+  PackageOpen, Tag, Star, BarChart2, ShieldCheck, Settings, Activity, LogOut, Menu, X, ExternalLink, Layers, Database, HelpCircle, Building2, Sparkles 
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
+import { LogoSettingsView } from './LogoSettingsView';
 import { DashboardView } from './DashboardView';
 import { ProductsView } from './ProductsView';
 import { BannersImagesView } from './BannersImagesView';
@@ -35,7 +36,7 @@ interface NavSection {
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => {
-  const { currentAdminUser, logout, products, invoices } = useAdmin();
+  const { currentAdminUser, logout, products, invoices, siteLogo } = useAdmin();
   const [historyStack, setHistoryStack] = useState<string[]>(['dashboard']);
   const historyRef = React.useRef(historyStack);
   historyRef.current = historyStack;
@@ -103,6 +104,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
       title: 'Catalog & Banners',
       items: [
         { id: 'products', label: `Products (${products.length})`, icon: <Package className="w-4 h-4" /> },
+        { id: 'logo', label: 'Logo & Branding', icon: <Sparkles className="w-4 h-4 text-orange-400" /> },
         { id: 'banners', label: 'Hero Banners', icon: <Image className="w-4 h-4" /> },
         { id: 'categories', label: 'Category Cards', icon: <Layers className="w-4 h-4" /> },
         { id: 'images', label: 'Image Library', icon: <Image className="w-4 h-4" /> },
@@ -138,6 +140,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
       case 'customers': return <CustomersView />;
       case 'invoices': return <InvoicesHistoryView />;
       case 'products': return <ProductsView />;
+      case 'logo': return <LogoSettingsView />;
       case 'banners': return <BannersImagesView />;
       case 'categories': return <CategoriesView />;
       case 'images': return <BannersImagesView />;
@@ -161,8 +164,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
       <aside className="hidden lg:flex flex-col w-72 bg-slate-900 text-slate-300 border-r border-slate-800 shrink-0">
         <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-12 rounded-xl overflow-hidden bg-white flex items-center px-1 shadow-lg">
-              <img src="https://img.sanishtech.com/u/65c843b363e7b4f65c6efab5a16570b4.jpg" alt="Shivani Graphics" className="h-full w-auto object-contain" />
+            <div className="h-12 w-12 rounded-xl overflow-hidden bg-white flex items-center justify-center p-1 shadow-lg">
+              <img src={siteLogo} alt="Shivani Graphics" className="w-full h-full object-cover rounded-lg" />
             </div>
             <div className="flex flex-col">
               <span className="font-black text-xs sm:text-sm tracking-tight leading-none">
@@ -221,7 +224,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#50007c] text-white font-black text-xs flex items-center justify-center">SG</div>
+              <div className="w-7 h-7 rounded-lg overflow-hidden bg-white border border-purple-200 flex items-center justify-center">
+                <img src={siteLogo} alt="Logo" className="w-full h-full object-cover" />
+              </div>
               <span className="font-black text-sm text-slate-900">Admin Studio</span>
             </div>
           </div>
