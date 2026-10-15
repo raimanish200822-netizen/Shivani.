@@ -11,25 +11,7 @@ export const CustomersView: React.FC = () => {
   const [newEmail, setNewEmail] = useState('');
   const [newAddress, setNewAddress] = useState('');
 
-  // Auto-sync customers from orders if none in Firestore
-  useEffect(() => {
-    if (customers.length === 0 && orders.length > 0) {
-      const uniqueMap = new Map();
-      orders.forEach(ord => {
-        const key = ord.phone || ord.customerName;
-        if (!key || uniqueMap.has(key)) return;
-        uniqueMap.set(key, {
-          id: `cust-${ord.phone || Date.now()}`,
-          name: ord.customerName || 'Valued Customer',
-          phone: ord.phone || 'N/A',
-          email: ord.email || 'customer@shivanigraphics.com',
-          address: ord.address || 'Delhi NCR',
-          createdAt: new Date().toISOString().split('T')[0]
-        });
-      });
-      uniqueMap.forEach(c => saveCustomer(c));
-    }
-  }, [orders.length, customers.length]);
+
 
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();

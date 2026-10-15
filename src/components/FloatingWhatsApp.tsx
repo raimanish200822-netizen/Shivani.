@@ -74,10 +74,15 @@ export const FloatingWhatsApp: React.FC = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            initial={{ opacity: 0, scale: 0.85, y: 35 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              y: 0,
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+            }}
+            exit={{ opacity: 0, scale: 0.85, y: 35 }}
+            transition={{ type: 'spring', damping: 16, stiffness: 320, mass: 0.8 }}
             className="fixed bottom-6 right-4 sm:right-6 z-50 w-[92vw] sm:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col"
             style={{ maxHeight: 'calc(100vh - 100px)' }}
           >
@@ -97,6 +102,9 @@ export const FloatingWhatsApp: React.FC = () => {
                       Live
                     </span>
                   </h3>
+                  <div className="text-[10px] text-emerald-200 font-semibold mt-0.5 flex items-center gap-1">
+                    <span>👤 Agent: Ranjan</span>
+                  </div>
                   <div className="flex items-center gap-1.5 text-[11px] text-emerald-100">
                     {isAgentTyping ? (
                       <span className="flex items-center gap-1 text-emerald-200 font-bold animate-pulse">

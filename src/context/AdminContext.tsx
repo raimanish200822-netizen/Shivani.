@@ -163,6 +163,7 @@ interface AdminContextType {
     aboutMission?: string;
     aboutVision?: string;
     aboutStory?: string;
+    aboutImageUrl?: string;
     seoTitle?: string;
     seoDescription?: string;
     seoKeywords?: string;
@@ -222,6 +223,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     aboutMission: 'To provide 5-minute visiting cards, bulk flex banners, and 3D acrylic LED boards with unmatched precision and wholesale pricing.',
     aboutVision: 'To be India\'s most trusted digital print & signage partner for small businesses, agencies, and retail brands.',
     aboutStory: 'Founded in Mahavir Enclave, New Delhi, Shivani Graphics started as a boutique digital print desk and grew into a full-fledged high-speed production printing house.',
+    aboutImageUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
     seoTitle: 'Shivani Graphics · Custom Print & Signage | Delhi NCR',
     seoDescription: 'Premium commercial digital printing in Delhi NCR & Pan-India. Visiting cards, banners, standees, corporate stationery, photo frames, and customized merchandising with instant WhatsApp ordering.',
     seoKeywords: 'printing press, visiting cards, flex banners, signages, delhi ncr, shivani graphics, print shop'
@@ -264,17 +266,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     // 1. Products Listener
     const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-      if (!snapshot.empty) {
-        const items = snapshot.docs.map(doc => doc.data() as ProductItem);
-        setProducts(items);
-      } else {
-        PRODUCTS.forEach(async (p) => {
-          try {
-            await setDoc(doc(db, 'products', p.id), p);
-          } catch (err) {}
-        });
-        setProducts(PRODUCTS);
-      }
+      const firestoreItems = snapshot.docs.map(doc => doc.data() as ProductItem);
+      const firestoreIds = new Set(firestoreItems.map(p => p.id));
+      const merged = [...firestoreItems];
+      PRODUCTS.forEach(p => {
+        if (!firestoreIds.has(p.id)) {
+          merged.push(p);
+          setDoc(doc(db, 'products', p.id), p).catch(() => {});
+        }
+      });
+      setProducts(merged);
       setIsFirebaseLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'products');
@@ -305,40 +306,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const items = snapshot.docs.map(doc => doc.data() as AdminOrder);
         setOrders(items);
       } else {
-        const defaultOrders: AdminOrder[] = [
-          {
-            id: 'SG-1001',
-            customerName: 'Rohan Sharma',
-            phone: '9810157695',
-            email: 'rohan@gmail.com',
-            address: 'Mahavir Enclave, New Delhi',
-            productTitle: 'Premium Visiting Cards (350 GSM)',
-            quantity: 500,
-            options: 'Matte Lamination + Spot UV',
-            totalAmount: 750,
-            status: 'Printing',
-            paymentStatus: 'Paid',
-            date: '2026-10-14'
-          },
-          {
-            id: 'SG-1002',
-            customerName: 'Neha Gupta',
-            phone: '9266944315',
-            email: 'neha@gmail.com',
-            address: 'Dwarka Sector 7, New Delhi',
-            productTitle: 'Outdoor Star Flex Banner',
-            quantity: 2,
-            options: '340 GSM Heavy with Eyelets',
-            totalAmount: 1200,
-            status: 'Ready for Pickup',
-            paymentStatus: 'Paid',
-            date: '2026-10-14'
-          }
-        ];
-        defaultOrders.forEach(async (ord) => {
-          try { await setDoc(doc(db, 'orders', ord.id), ord); } catch (err) {}
-        });
-        setOrders(defaultOrders);
+        setOrders([]);
       }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'orders');
@@ -431,7 +399,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (docSnap.exists()) {
         setWebsiteContent(docSnap.data() as any);
       } else {
-        const initialContent = {
+        const initialContent: any = {
           heroHeading: 'Shivani Graphics · Printo-Style Commercial Printing',
           heroSubtitle: 'Premium digital printing, visiting cards, flex banners, 3D acrylic LED boards & corporate merch in Delhi NCR.',
           phone: '+91-9266944315',

@@ -149,6 +149,14 @@ export default function App() {
     navigateTo(route as AppView);
   };
 
+  if (currentView === 'admin') {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+        <AdminPanel onBackToHome={() => navigateTo('home')} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-[#50007c] selection:text-white">
       
@@ -299,12 +307,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Admin Panel Page */}
-            {currentView === 'admin' && (
-              <AdminPanel
-                onBackToHome={() => navigateTo('home')}
-              />
-            )}
+
           </motion.div>
         </AnimatePresence>
       </main>

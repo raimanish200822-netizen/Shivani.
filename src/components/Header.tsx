@@ -99,8 +99,8 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Main Bar */}
         <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
           
-          {/* Left: Hamburger menu toggle */}
-          <div className="flex items-center">
+          {/* Left: Hamburger Menu + Shivani Graphics Brand Logo */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onOpenMobileMenu}
               type="button"
@@ -109,10 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Menu className="w-6 h-6 stroke-[2.2]" />
             </button>
-          </div>
 
-          {/* Center-Left: Shivani Graphics Brand Logo */}
-          <div className="flex items-center">
             <button 
               type="button"
               onClick={onNavigateHome}

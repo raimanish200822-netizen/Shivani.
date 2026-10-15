@@ -1890,6 +1890,100 @@ export const PRODUCTS: ProductItem[] = [
         { qty: 25, popular: false }
       ]
     }
+  },
+
+  // Additional Apparel Product 4: Corporate Blazers & Formal Waistcoats
+  {
+    id: 'corporate-blazers-suits',
+    slug: 'corporate-blazers-suits',
+    title: 'Corporate Uniform Blazers & Formal Waistcoats',
+    subtitle: 'Tailored in 48 Hours · Premium TerereWool Blend',
+    featureBadge: 'Formal Uniform',
+    category: 'apparel-uniforms',
+    categoryLabel: 'Apparel & Uniform Printing',
+    shortDescription: 'Custom tailored corporate blazers, hospitality waistcoats, and formal uniform sets with embroidered company crests.',
+    detailedDescription: 'Elevate your front-desk staff, hotel hospitality team, and corporate executives with custom-tailored blazers and waistcoats. Crafted from crease-resistant terry-wool blend fabric with precision embroidered chest logo crests.',
+    rating: 4.97,
+    reviewCount: 290,
+    dispatchTag: '⚡ 48-Hour Delhi NCR Delivery',
+    badge: 'Executive Best',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Corporate blazers and formal uniform suits',
+        caption: 'Tailored Corporate Blazer with Embroidered Chest Crest'
+      }
+    ],
+    specs: [
+      { label: 'Fabric Blend', value: 'Terry-Wool Anti-Crease Suiting Fabric' },
+      { label: 'Branding', value: 'High-Density Golden/Silver Thread Embroidery Crest' }
+    ],
+    config: {
+      sizes: [
+        { id: 'blazer-std', name: 'Formal Corporate Blazer', priceMultiplier: 1.0, description: 'Tailored suit jacket with lining' }
+      ],
+      materials: [
+        { id: 'terry-wool', name: 'Anti-Wrinkle Terry-Wool', priceMultiplier: 1.0, description: 'All-day comfort suiting' }
+      ],
+      finishes: [
+        { id: 'embroidery', name: 'Custom Chest Logo Embroidery', priceMultiplier: 1.0, description: 'Professional stitched crest' }
+      ],
+      sides: [
+        { id: 'front-crest', name: 'Left Chest Crest', priceMultiplier: 1.0, description: 'Standard corporate placement' }
+      ],
+      quantities: [
+        { qty: 1, popular: true },
+        { qty: 5, popular: false },
+        { qty: 20, popular: false }
+      ]
+    }
+  },
+
+  // Additional Apparel Product 5: Custom Embroidered Caps
+  {
+    id: 'custom-embroidered-caps',
+    slug: 'custom-embroidered-caps',
+    title: 'Custom Embroidered Cotton Caps & Sun Visors',
+    subtitle: 'Printed in 24 Hours · 100% Heavy Brushed Cotton',
+    featureBadge: 'Promo Merch',
+    category: 'apparel-uniforms',
+    categoryLabel: 'Apparel & Uniform Printing',
+    shortDescription: 'Custom embroidered baseball caps and promotional sun visors in 100% heavy brushed cotton with adjustable brass buckle.',
+    detailedDescription: 'Promote your brand outdoors with premium structured baseball caps featuring 3D puff embroidery or flat stitched corporate logos. Made from heavy brushed cotton with embroidered eyelets and adjustable strap.',
+    rating: 4.95,
+    reviewCount: 460,
+    dispatchTag: '⚡ Same-Day Dispatch in Delhi NCR',
+    badge: 'Event Favorite',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Custom embroidered baseball caps',
+        caption: 'Heavy Brushed Cotton Baseball Cap with 3D Logo Embroidery'
+      }
+    ],
+    specs: [
+      { label: 'Material', value: '100% Heavy Brushed Cotton Twill' },
+      { label: 'Closure', value: 'Adjustable Brass Buckle Strap' }
+    ],
+    config: {
+      sizes: [
+        { id: 'cap-std', name: 'Standard Adult Adjustable Cap', priceMultiplier: 1.0, description: 'One size fits all' }
+      ],
+      materials: [
+        { id: 'cotton-twill', name: 'Brushed Cotton Twill', priceMultiplier: 1.0, description: 'Durable breathable weave' }
+      ],
+      finishes: [
+        { id: '3d-embroidery', name: '3D Raised Thread Embroidery', priceMultiplier: 1.0, description: 'Stands out with depth' }
+      ],
+      sides: [
+        { id: 'front-cap', name: 'Front Crown Embroidery', priceMultiplier: 1.0, description: 'Primary brand logo' }
+      ],
+      quantities: [
+        { qty: 10, popular: true },
+        { qty: 50, popular: false },
+        { qty: 200, popular: false }
+      ]
+    }
   }
 ];
 

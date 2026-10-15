@@ -1,5 +1,4 @@
 import React from 'react';
-const facilityImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80';
 import { 
   Printer, 
   MapPin, 
@@ -35,6 +34,7 @@ interface AboutUsPageProps {
 
 export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onBackToHome, onExploreCatalog }) => {
   const { websiteContent } = useAdmin();
+  const facilityImg = websiteContent.aboutImageUrl || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80';
 
   return (
     <div className="py-8 sm:py-12 bg-white">
