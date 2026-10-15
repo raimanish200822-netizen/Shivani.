@@ -150,10 +150,10 @@ export const FounderManagementView: React.FC<FounderManagementViewProps> = ({ on
             <div>
               <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
                 <Camera className="w-4 h-4 text-[#50007c]" />
-                Photo Upload Section (Gallery / File / URL)
+                Photo Upload Section (Phone Gallery / Computer)
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Select portrait of Founder Ranjan Roy and printing facility photo from your phone gallery or computer. Files are automatically compressed and saved securely.
+                Select portrait of Founder Ranjan Roy and printing facility photo directly from your phone gallery or computer. Photos are automatically compressed and saved permanently.
               </p>
             </div>
             <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200">
@@ -217,7 +217,7 @@ export const FounderManagementView: React.FC<FounderManagementViewProps> = ({ on
               <ImageUploader
                 value={form.founderImageUrl}
                 onChange={(url) => setForm(prev => ({ ...prev, founderImageUrl: url }))}
-                label="Founder Photo (Select from Gallery or Enter URL)"
+                label="Founder Portrait (Upload from Gallery)"
                 folder="founder"
               />
             </div>
@@ -270,7 +270,7 @@ export const FounderManagementView: React.FC<FounderManagementViewProps> = ({ on
               <ImageUploader
                 value={form.companyImageUrl}
                 onChange={(url) => setForm(prev => ({ ...prev, companyImageUrl: url }))}
-                label="Store / Press Facility Photo (Gallery or URL)"
+                label="Facility & Press Floor (Upload from Gallery)"
                 folder="facility"
               />
             </div>
