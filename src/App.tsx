@@ -20,6 +20,7 @@ import { CompareModal } from './components/CompareModal';
 import { playWelcomeVoiceGreeting, hasBeenGreeted, isVoiceMuted } from './utils/voiceGreeting';
 import { addRecentlyViewedId } from './utils/recentlyViewed';
 import { useAdmin } from './context/AdminContext';
+import { OfflineIndicator } from './components/OfflineIndicator';
 
 // Dedicated Separate Sub-Pages (Replacing Popups/Modals)
 import { TermsPage } from './components/pages/TermsPage';
@@ -177,7 +178,6 @@ export default function App() {
         onNavigateHome={() => navigateTo('home')}
         onNavigateTrack={() => navigateTo('track')}
         onNavigateAbout={() => navigateTo('about')}
-        onNavigateAdmin={() => navigateTo('admin')}
         onOpenCompare={() => setIsCompareOpen(true)}
       />
 
@@ -353,6 +353,8 @@ export default function App() {
         allProducts={products}
         onSelectProduct={handleSelectProduct}
       />
+
+      <OfflineIndicator />
 
     </div>
   );

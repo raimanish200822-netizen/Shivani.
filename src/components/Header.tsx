@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ProductItem } from '../types';
 import { CATEGORIES } from '../data/products';
 import { useAdmin } from '../context/AdminContext';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   products: ProductItem[];
@@ -36,7 +37,6 @@ interface HeaderProps {
   onNavigateHome: () => void;
   onNavigateTrack: () => void;
   onNavigateAbout: () => void;
-  onNavigateAdmin?: () => void;
   onOpenCompare?: () => void;
 }
 
@@ -53,7 +53,6 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateHome,
   onNavigateTrack,
   onNavigateAbout,
-  onNavigateAdmin,
   onOpenCompare
 }) => {
   const { siteLogo } = useAdmin();
@@ -231,15 +230,7 @@ export const Header: React.FC<HeaderProps> = ({
               About Us
             </button>
 
-            {onNavigateAdmin && (
-              <button
-                type="button"
-                onClick={onNavigateAdmin}
-                className="hidden md:inline-flex items-center gap-1 text-xs font-black text-[#50007c] bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors border border-purple-200"
-              >
-                <span>⚙️ Admin Panel</span>
-              </button>
-            )}
+
 
             {onOpenCompare && (
               <button
@@ -251,6 +242,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>⚖️ Compare</span>
               </button>
             )}
+
+            <div className="hidden sm:block">
+              <PWAInstallButton />
+            </div>
 
             {/* Mobile Search Trigger */}
             <button
