@@ -149,26 +149,16 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, onClose }) =>
             </div>
           </div>
 
-          {/* UPI & Terms Section (Replaced Bank Details) */}
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 text-[11px] text-slate-600 bg-slate-50/50 p-4 rounded-2xl">
+          {/* Terms Section */}
+          <div className="pt-4 border-t border-slate-200 text-[11px] text-slate-600 bg-slate-50/50 p-4 rounded-2xl flex justify-between items-end">
             <div>
-              <p className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                <QrCode className="w-4 h-4 text-[#50007c]" /> UPI & Digital Payment
-              </p>
-              <p>UPI ID: <strong className="text-slate-900">shivanigraphics@paytm</strong></p>
-              <p>GPay / PhonePe / Paytm: <strong className="text-slate-900">9810157695</strong></p>
-              <p className="text-[10px] text-emerald-700 font-bold mt-1">✓ Verified Merchant Account</p>
+              <p className="font-bold text-slate-900 mb-1">Terms & Conditions:</p>
+              <p className="text-[10px] text-slate-500">1. Goods once printed/customized cannot be returned.</p>
+              <p className="text-[10px] text-slate-500">2. Subject to Delhi NCR jurisdiction.</p>
             </div>
-            <div className="text-right flex flex-col justify-between">
-              <div>
-                <p className="font-bold text-slate-900 mb-1">Terms & Conditions:</p>
-                <p className="text-[10px] text-slate-500">1. Goods once printed/customized cannot be returned.</p>
-                <p className="text-[10px] text-slate-500">2. Subject to Delhi NCR jurisdiction.</p>
-              </div>
-              <div className="pt-2">
-                <p className="font-bold text-slate-900">For Shivani Graphics</p>
-                <p className="text-[10px] text-slate-400">Authorized Signatory</p>
-              </div>
+            <div className="text-right">
+              <p className="font-bold text-slate-900">For Shivani Graphics</p>
+              <p className="text-[10px] text-slate-400">Authorized Signatory</p>
             </div>
           </div>
 

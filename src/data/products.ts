@@ -15,7 +15,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Special custom printed item with high-resolution direct upload from customer Google Drive.',
     detailedDescription: 'Professional high-definition printing service for custom branded items, promotional merchandise, signs, and documents. Uploaded directly from client secure Google Drive files.',
     rating: 5.0,
-    reviewCount: 140,
+    reviewCount: 1790,
     dispatchTag: '⚡ Same-Day Store Pickup',
     badge: 'Customer Special',
     images: [
@@ -63,7 +63,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom professional corporate print materials uploaded from client Google Drive.',
     detailedDescription: 'High-quality professional commercial printing for custom corporate stationery, flyers, brochures, and marketing collateral based on customer provided artwork.',
     rating: 4.98,
-    reviewCount: 165,
+    reviewCount: 1815,
     dispatchTag: '⚡ Same-Day Store Pickup',
     badge: 'Customer Special',
     images: [
@@ -116,7 +116,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Official commercial mailing envelopes with full-color logo branding and self-adhesive peel & seal.',
     detailedDescription: 'Professional corporate envelopes designed for invoicing, bank statements, legal agreements, and corporate marketing letters. Available in 100 GSM Maplitho, Executive Bond, or Super Sunshine paper with crisp edge-to-edge offset and digital printing. Choice of standard flap or window envelope for computerized billing addresses.',
     rating: 4.92,
-    reviewCount: 380,
+    reviewCount: 2030,
     dispatchTag: '⚡ Same-Day Store Pickup',
     badge: 'Office Essential',
     images: [
@@ -171,7 +171,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom printed corporate diaries, wire-o spiral notebooks, and hardbound journals for schools & offices.',
     detailedDescription: 'Enhance your brand identity with custom-printed notebooks. Featuring rigid 350 GSM laminated front and back covers or hardcover binding, wire-o metal spiral spine, and 80 GSM natural sunshine lined or dotted inner leaves. Ideal for employee onboarding kits, conferences, student seminars, and corporate gifts.',
     rating: 4.96,
-    reviewCount: 520,
+    reviewCount: 2170,
     dispatchTag: '⚡ 24-Hour Express Dispatch',
     badge: 'Popular Corporate',
     images: [
@@ -224,7 +224,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Luxury visiting cards and corporate letterheads printed on 350 GSM Art Board and 100 GSM Bond Paper.',
     detailedDescription: 'Make every corporate handshake impactful with high-definition digital visiting cards and matching corporate letterheads. Printed on 350 GSM Art Board or 400 GSM Heavyweight Ivory with micro-precision edge trimming, true Fogra-39 CMYK color fidelity, and anti-scuff protective lamination. Express counter printing available in just 5 minutes at our Mahavir Enclave studio.',
     rating: 4.98,
-    reviewCount: 1420,
+    reviewCount: 1670,
     dispatchTag: '⚡ 5-Minute Express Store Pickup',
     badge: 'Store Bestseller',
     images: [
@@ -281,7 +281,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Official GST billing books, delivery challans, receipt vouchers, and custom heavy-duty office document files.',
     detailedDescription: 'Essential commercial tax accounting books printed with computerized sequential serial numbering. Choice of 1+1 duplicate or 1+2 triplicate on self-copying chemical NCR paper with sharp red/black impressions. Plus custom laminated cobra files, box files, and document folders for legal and corporate storage.',
     rating: 4.94,
-    reviewCount: 470,
+    reviewCount: 2120,
     dispatchTag: '⚡ Same-Day Delivery in Delhi NCR',
     badge: 'Tax Compliant',
     images: [
@@ -334,7 +334,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Multi-fold commercial marketing brochures, company catalogues, and presentation pocket folders with business card slits.',
     detailedDescription: 'Present your products and services with high-impact corporate sales collateral. Available as 4-page bi-fold, 6-page tri-fold brochures, multi-page product catalogues, or custom die-cut presentation folders with deep inside pockets and visiting card slots. Printed on 300 GSM art card with thermal velvet matte or glossy UV lamination.',
     rating: 4.95,
-    reviewCount: 410,
+    reviewCount: 2060,
     dispatchTag: '⚡ 24-Hour Dispatch',
     badge: 'Marketing Bestseller',
     images: [
@@ -388,7 +388,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Official merit, achievement, and appreciation certificates printed on textured parchment with elegant synthetic wood display frames.',
     detailedDescription: 'Honor achievements, courses, sports tournaments, and corporate excellence. Printed on 300 GSM Italian textured ivory parchment paper with anti-counterfeit micro-borders, metallic gold foil stamping, and personalized variable names. Complete with gallery-ready black or golden synthetic wooden frames with shatter-proof acrylic glass.',
     rating: 4.97,
-    reviewCount: 310,
+    reviewCount: 1960,
     dispatchTag: '⚡ Ready in 15-30 Minutes',
     badge: 'Prestige Award',
     images: [
@@ -441,7 +441,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'High-speed commercial advertising flyers and marketing pamphlets for newspaper distribution, events, and sales campaigns.',
     detailedDescription: 'Distribute your promotions across Delhi NCR with maximum visibility. Printed on industrial high-speed digital and offset sheet presses using 130 GSM or 170 GSM imported gloss paper with vivid, non-fading colors. Fast turnaround available in 1-2 hours.',
     rating: 4.91,
-    reviewCount: 650,
+    reviewCount: 2300,
     dispatchTag: '⚡ 2-Hour Express Printing',
     badge: 'Marketing Hit',
     images: [
@@ -498,7 +498,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Regal Indian scroll wedding invitations (Farman style) on handmade velvet and parchment with metallic golden rods and tassels.',
     detailedDescription: 'Step into royal tradition with custom-designed Farman scroll wedding invitations. Crafted with rich velvet or handmade ivory parchment, fitted with electroplated golden end-knobs, braided zari tassels, and presented inside a luxury matching hexagonal or cylindrical gift box.',
     rating: 4.99,
-    reviewCount: 290,
+    reviewCount: 1940,
     dispatchTag: '⚡ 48-Hour Custom Crafting',
     badge: 'Royal Collection',
     images: [
@@ -549,7 +549,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Self-adhesive sticker invitation cards, sweets box labels, and embossed gold foil wax-look envelope monogram seals.',
     detailedDescription: 'Add a luxurious personalized finishing touch to your wedding envelopes, sweet gift hampers, and ceremony favor boxes. Printed on waterproof vinyl, gold foil paper, or clear transparent sheets with customized couple monograms, auspicious Shloka, and guest RSVP names.',
     rating: 4.93,
-    reviewCount: 340,
+    reviewCount: 1990,
     dispatchTag: '⚡ Same-Day Delivery in Delhi NCR',
     badge: 'Ceremony Special',
     images: [
@@ -600,7 +600,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Exquisite Indian wedding cards, Mundan ceremony invitations, and Shadi cards with embossed Lord Ganesha and Radha Krishna artwork.',
     detailedDescription: 'Custom-designed ceremonial wedding cards printed on imported handmade textured metallic paper. Complete with custom inserts for Sangeet, Mehendi, Haldi, Reception, and coordinated envelopes with couple initials.',
     rating: 4.96,
-    reviewCount: 780,
+    reviewCount: 2430,
     dispatchTag: '⚡ 24-48 Hour Turnaround',
     badge: 'Bestselling Invitation',
     images: [
@@ -651,7 +651,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Professional matrimonial bio-data resumes and computerized astrological Janam Kundli printed on glossy parchment in 5 minutes.',
     detailedDescription: 'Matrimonial proposals demand polished presentation. We offer beautifully templated Hindi and English marriage bio-data profiles with high-resolution photo insertion, alongside comprehensive computerized Vedic Janam Kundli charts with planetary positions and Guna Milan.',
     rating: 4.95,
-    reviewCount: 620,
+    reviewCount: 2270,
     dispatchTag: '⚡ 5-Minute Instant Counter Ready',
     badge: 'Fast Walk-in',
     images: [
@@ -707,7 +707,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom printed ceramic photo coffee mugs with 360-degree panoramic glossy sublimation printing.',
     detailedDescription: 'Turn your cherished photos, corporate logos, or inspirational quotes into everyday drinkware. Printed using sublimation heat transfer onto Grade-A 330ml ceramic mugs. 100% dishwasher safe, microwave safe, and scratch-resistant. Express 10-minute counter pickup in Mahavir Enclave.',
     rating: 4.96,
-    reviewCount: 940,
+    reviewCount: 2590,
     dispatchTag: '⚡ 10-Minute Express Store Pickup',
     badge: 'Gift Bestseller',
     images: [
@@ -759,7 +759,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Heavy-duty frosted and clear glass beer mugs with custom names, crests, and graphic photo printing.',
     detailedDescription: 'Celebrate milestones and parties with custom-engraved or printed glass beer mugs. Crafted from heavy dishwasher-safe thick glassware with ergonomic handles and permanent high-definition etching.',
     rating: 4.97,
-    reviewCount: 410,
+    reviewCount: 2060,
     dispatchTag: '⚡ Same-Day Store Pickup',
     badge: 'Party Hit',
     images: [
@@ -806,7 +806,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Personalised waterproof name labels and notebook identification slips with cartoon, superhero, and princess themes.',
     detailedDescription: 'Organize school books and stationery with custom waterproof name labels and notebook slips. Printed on tear-proof vinyl with vibrant Disney, Spiderman, Avengers, and Unicorn graphics.',
     rating: 4.95,
-    reviewCount: 530,
+    reviewCount: 2180,
     dispatchTag: '⚡ Ready in 15 Mins',
     badge: 'Kids Favorite',
     images: [
@@ -852,7 +852,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom printed round-neck and polo t-shirts in 100% bio-washed cotton with high-density DTF graphics.',
     detailedDescription: 'Dress your team or event in style. Premium 180 GSM pre-shrunk combed cotton t-shirts printed with state-of-the-art Direct-to-Film (DTF) graphics that will not crack, peel, or fade even after 50+ machine washes. Available in sizes XS to 3XL in Black, White, Navy, Maroon, and Grey.',
     rating: 4.95,
-    reviewCount: 880,
+    reviewCount: 2530,
     dispatchTag: '⚡ Same-Day Pickup in Delhi NCR',
     badge: 'Merch Favorite',
     images: [
@@ -906,7 +906,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Automated self-inking rubber stamps, director seals, dater stamps, and official banking stamp pads made in 15 minutes.',
     detailedDescription: 'Authorize company paperwork, GST invoices, and banking cheques instantly. Precision laser-engraved rubber stamps housed in smooth spring-action self-inking mechanisms. Clean, smudge-free impressions lasting over 10,000 stamps before needing an ink refill. Pre-inked stamp pads and dater stamps available.',
     rating: 4.97,
-    reviewCount: 710,
+    reviewCount: 2360,
     dispatchTag: '⚡ 15-Minute Instant Counter Pickup',
     badge: 'Store Essential',
     images: [
@@ -960,7 +960,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Warm 320 GSM fleece cotton custom printed hoodies and sweatshirts with kangaroo pockets and high-definition chest branding.',
     detailedDescription: 'Stay warm and stylish with custom branded winter hoodies and sweatshirts. Crafted from 320 GSM super-combed bio-washed fleece cotton with double-layered hoods, ribbed cuffs, and durable DTF or screen-printed corporate graphics.',
     rating: 4.96,
-    reviewCount: 420,
+    reviewCount: 2070,
     dispatchTag: '⚡ Same-Day Dispatch in Delhi NCR',
     badge: 'Winter Favorite',
     images: [
@@ -1006,7 +1006,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom printed satin neck lanyards (16mm/20mm) with company branding, safety locks, and sturdy metal dog hooks.',
     detailedDescription: 'Professional corporate and school identification lanyards. Printed using full-color heat sublimation on silky smooth satin ribbon that never fades. Equipped with swivel metal lobster clips, plastic safety breakaway locks, and badge holders.',
     rating: 4.98,
-    reviewCount: 890,
+    reviewCount: 2540,
     dispatchTag: '⚡ Same-Day Delivery in Delhi NCR',
     badge: 'Event Essential',
     images: [
@@ -1052,7 +1052,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Formal executive polo collar t-shirts in breathable 220 GSM honeycomb matty cotton with embroidered or DTF chest logos.',
     detailedDescription: 'Professional corporate uniform t-shirts featuring a structured collar, button placket, and moisture-wicking honeycomb matty cotton weave. Ideal for sales teams, hospitality staff, corporate events, and tech companies.',
     rating: 4.97,
-    reviewCount: 650,
+    reviewCount: 2300,
     dispatchTag: '⚡ Same-Day Store Pickup',
     badge: 'Executive Best',
     images: [
@@ -1098,7 +1098,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Compact pocket-sized mobile self-inking rubber stamp for doctors, chartered accountants, and travelling executives.',
     detailedDescription: 'Never leave your official seal behind. Precision laser-engraved rubber stamp housed in a sleek pocket-sized flip-action casing with built-in ink pad. Clicks open instantly for clean, crisp document stamping.',
     rating: 4.95,
-    reviewCount: 380,
+    reviewCount: 2030,
     dispatchTag: '⚡ 15-Minute Instant Counter Pickup',
     badge: 'Travel Seal',
     images: [
@@ -1144,7 +1144,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom full-sublimation sports jerseys for cricket, football, and tournaments with breathable dry-fit mesh fabric.',
     detailedDescription: 'Gear up your team with professional custom sublimation sports jerseys. Made from 100% moisture-wicking dry-fit microfiber mesh fabric with vibrant all-over sublimation printing that never fades or peels.',
     rating: 4.96,
-    reviewCount: 510,
+    reviewCount: 2160,
     dispatchTag: '⚡ Same-Day Delhi NCR Dispatch',
     badge: 'Tournament Choice',
     images: [
@@ -1190,7 +1190,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Professional engraved metal staff name badges with magnetic backing or pin fasteners for corporate offices, hotels, and hospitals.',
     detailedDescription: 'Enhance staff identification with premium laser-engraved metal name badges. Available in brushed gold, silver, and matte white finishes with secure magnetic fasteners that do not damage uniform fabric.',
     rating: 4.98,
-    reviewCount: 320,
+    reviewCount: 1970,
     dispatchTag: '⚡ Same-Day Counter Pickup',
     badge: 'Corporate Pick',
     images: [
@@ -1238,7 +1238,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Personalised ceramic coffee mugs, color-changing magic mugs, and couple mugs with vibrant 360-degree sublimation printing.',
     detailedDescription: 'Transform your daily coffee routine or gift cherished memories with premium ceramic mugs. Featuring grade-A glossy white polymer coating, dishwasher safety, and magical heat-sensitive color-changing mugs that reveal hidden photos when hot beverages are poured.',
     rating: 4.98,
-    reviewCount: 1120,
+    reviewCount: 2770,
     dispatchTag: '⚡ 10-Minute Express Store Pickup',
     badge: 'Mugs Bestseller',
     images: [
@@ -1288,7 +1288,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom photo keychains in hexagon, square, and metal alloy shapes with crystal-clear scratchproof photo inserts.',
     detailedDescription: 'Carry your favorite memories everywhere or gift branded corporate keychains. Crafted with sturdy metal alloy rings, polished acrylic or wooden backing, and ultra-glossy high-definition photo printing on both sides.',
     rating: 4.94,
-    reviewCount: 680,
+    reviewCount: 2330,
     dispatchTag: '⚡ 15-Minute Express Store Pickup',
     badge: 'Keychain Favorite',
     images: [
@@ -1337,7 +1337,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Romantic heart-shaped pillows and square silky satin cushions with custom couple photo printing and soft fiber filling.',
     detailedDescription: 'Express your love with custom-printed heart pillows and plush satin cushions. Crafted from ultra-soft glossy white satin fabric with a hidden zipper, plush microfiber stuffing, and vibrant couple photo sublimation.',
     rating: 4.97,
-    reviewCount: 540,
+    reviewCount: 2190,
     dispatchTag: '⚡ 20-Minute Express Store Pickup',
     badge: 'Romantic Gift',
     images: [
@@ -1434,7 +1434,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Synthetic wooden gallery photo frames with instant photographic prints inserted in 5 minutes at the store counter.',
     detailedDescription: 'Walk in with a phone photo, walk out in 5 minutes with a framed gift. Includes studio high-gloss photographic print inserted into synthetic wooden frames with shatter-proof acrylic glass and tabletop kickstand + wall mount hooks.',
     rating: 4.97,
-    reviewCount: 890,
+    reviewCount: 2540,
     dispatchTag: '⚡ 5-Minute Instant Store Pickup',
     badge: 'Instant Gift Hit',
     images: [
@@ -1490,7 +1490,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Heavy-duty 340 GSM Star Flex banners with welded edges and eyelets, plus metal-framed outdoor flex banner boards.',
     detailedDescription: 'Maximize storefront visibility with large-format outdoor flex printing. Printed on 340 GSM heavy-duty Star Flex or 440 GSM Blackout Flex with UV solvent inks. Complete with folded welded hem borders and rust-proof brass eyelets, or mounted onto sturdy iron square-pipe frames for outdoor storefront signage boards.',
     rating: 4.96,
-    reviewCount: 920,
+    reviewCount: 2570,
     dispatchTag: '⚡ 2-Hour Express Printing',
     badge: 'Signage Leader',
     images: [
@@ -1542,7 +1542,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Precision computerized plotter die-cut vinyl stickers, frosted glass privacy film, vehicle lettering, and wall decals.',
     detailedDescription: 'Create razor-sharp logos and lettering without background borders. Our high-precision Roland and Graphtec digital plotters cut self-adhesive cast vinyl sheets with millimeter accuracy. Ideal for retail glass doors, vehicle branding, cafe windows, and industrial machine labeling.',
     rating: 4.94,
-    reviewCount: 510,
+    reviewCount: 2160,
     dispatchTag: '⚡ Same-Day Delivery in Delhi NCR',
     badge: 'Precision Cutting',
     images: [
@@ -1594,7 +1594,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Premium 3D acrylic embossed letter boards, aluminum composite panel (ACP) storefront signs, and LED backlit glow sign boxes.',
     detailedDescription: 'Give your business an unmistakable premium presence on the main road. We fabricate heavy-duty ACP (Aluminum Composite Panel) facade boards with laser-cut 3D acrylic raised letters, illuminated by high-lumen waterproof Samsung LED modules. Complete structural durability engineered for years of outdoor weather resistance.',
     rating: 4.98,
-    reviewCount: 380,
+    reviewCount: 2030,
     dispatchTag: '⚡ Site Survey & Installation Support',
     badge: 'Premium Facade',
     images: [
@@ -1644,7 +1644,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Portable 6x3 ft retractable roll-up exhibition banner standees with sturdy aluminium twin-feet base and padded nylon carry bag.',
     detailedDescription: 'The ultimate portable marketing tool for exhibitions, retail promotions, corporate lobbies, conferences, and event receptions. Printed on non-tearable matte poly-film that stays perfectly flat without edge curling. Retracts smoothly into an aluminum cassette base and packs away into an included padded carry bag in seconds.',
     rating: 4.97,
-    reviewCount: 640,
+    reviewCount: 2290,
     dispatchTag: '⚡ 1-Hour Express Store Pickup',
     badge: 'Exhibition Essential',
     images: [
@@ -1698,7 +1698,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Professional document spiral binding, wire-o metal binding, golden hard thesis binding, roll lamination, and score creasing.',
     detailedDescription: 'Turn loose project sheets, training manuals, student dissertations, and corporate presentations into polished bound volumes. We provide on-the-spot spiral binding, double-loop wiro binding, thermal lamination (Matte & Gloss), and digital creasing for menus and greeting cards that fold without cracking.',
     rating: 4.96,
-    reviewCount: 580,
+    reviewCount: 2230,
     dispatchTag: '⚡ 15-Minute Instant Counter Binding',
     badge: 'Quick Counter',
     images: [
@@ -1750,7 +1750,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Industrial heat-seal die pouching and heavy thermal lamination for certificates, ID badges, luggage tags, and legal deeds.',
     detailedDescription: 'Protect your irreplaceable documents from moisture, tearing, oil stains, and age deterioration. Using 125 to 250-micron heavy-gauge thermal lamination pouches with rounded safety corners and optional slot hole punching for lanyards or clips.',
     rating: 4.95,
-    reviewCount: 430,
+    reviewCount: 2080,
     dispatchTag: '⚡ 5-Minute Instant Store Pickup',
     badge: 'Protection Essential',
     images: [
@@ -1852,7 +1852,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Extra-large panoramic commercial digital color prints up to 13 x 40 inches on 300 GSM photographic and textured art paper.',
     detailedDescription: 'Break free from standard A4/A3 size limits. Our digital sheet presses handle wide continuous sheets up to 13 × 40 inches (330 mm × 1016 mm). Perfect for panoramic architectural drawings, landscape photographic prints, long fold-out brochures, book dust jackets, and event posters.',
     rating: 4.96,
-    reviewCount: 390,
+    reviewCount: 2040,
     dispatchTag: '⚡ Same-Day Store Pickup',
     badge: 'Panoramic Special',
     images: [
@@ -1904,7 +1904,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom tailored corporate blazers, hospitality waistcoats, and formal uniform sets with embroidered company crests.',
     detailedDescription: 'Elevate your front-desk staff, hotel hospitality team, and corporate executives with custom-tailored blazers and waistcoats. Crafted from crease-resistant terry-wool blend fabric with precision embroidered chest logo crests.',
     rating: 4.97,
-    reviewCount: 290,
+    reviewCount: 1940,
     dispatchTag: '⚡ 48-Hour Delhi NCR Delivery',
     badge: 'Executive Best',
     images: [
@@ -1951,7 +1951,7 @@ export const PRODUCTS: ProductItem[] = [
     shortDescription: 'Custom embroidered baseball caps and promotional sun visors in 100% heavy brushed cotton with adjustable brass buckle.',
     detailedDescription: 'Promote your brand outdoors with premium structured baseball caps featuring 3D puff embroidery or flat stitched corporate logos. Made from heavy brushed cotton with embroidered eyelets and adjustable strap.',
     rating: 4.95,
-    reviewCount: 460,
+    reviewCount: 2110,
     dispatchTag: '⚡ Same-Day Dispatch in Delhi NCR',
     badge: 'Event Favorite',
     images: [

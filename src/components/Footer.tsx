@@ -617,10 +617,7 @@ export const Footer: React.FC<FooterProps> = ({
           </a>
         </div>
 
-        {/* Payment badges */}
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-500">
-          <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-black">⚡ UPI (GPay / PhonePe / Paytm / QR)</span>
-        </div>
+
 
         {/* Copyright */}
         <p className="text-center text-[11px] text-slate-500">
