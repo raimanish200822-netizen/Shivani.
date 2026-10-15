@@ -147,33 +147,87 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({ onBackToHome }) 
               </span>
             </div>
 
-            {/* Stepper Timeline */}
-            <div className="space-y-6 relative pl-6 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-              
-              <div className="relative">
-                <span className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">
-                  ✓
+            {/* Visual Progress Bar */}
+            <div className="py-2">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Live Production Progress</span>
+                <span className="text-xs font-black text-[#50007c] bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
+                  {foundOrder.status}
                 </span>
-                <p className="font-bold text-xs sm:text-sm text-slate-900">Order Received & Confirmed in Database</p>
-                <p className="text-[11px] text-slate-500">Recorded on {foundOrder.date || 'Recent'}</p>
               </div>
 
-              <div className="relative">
-                <span className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">
-                  ✓
-                </span>
-                <p className="font-bold text-xs sm:text-sm text-slate-900">Prepress & Artwork Verification</p>
-                <p className="text-[11px] text-slate-500">Specifications: {foundOrder.options || 'Standard print specifications'}</p>
-              </div>
+              {(() => {
+                const s = (foundOrder.status || '').toLowerCase();
+                let currentIdx = 0;
+                if (s.includes('deliver')) {
+                  currentIdx = 3;
+                } else if (s.includes('dispatch') || s.includes('out for delivery') || s.includes('ready')) {
+                  currentIdx = 2;
+                } else if (s.includes('print') || s.includes('quality') || s.includes('design') || s.includes('press') || s.includes('designing') || s.includes('design pending')) {
+                  currentIdx = 1;
+                } else {
+                  currentIdx = 0;
+                }
 
-              <div className="relative">
-                <span className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#50007c] text-white flex items-center justify-center text-[10px] animate-pulse">
-                  ⚡
-                </span>
-                <p className="font-bold text-xs sm:text-sm text-[#50007c]">Current Production Stage: {foundOrder.status}</p>
-                <p className="text-[11px] text-slate-500">Shivani Graphics High-Speed Digital Press, Mahavir Enclave, New Delhi</p>
-              </div>
+                const milestones = [
+                  { label: 'File Received', icon: Package, desc: 'Order verified' },
+                  { label: 'Printing', icon: Printer, desc: 'Digital press' },
+                  { label: 'Dispatch', icon: Truck, desc: 'Packed & ready' },
+                  { label: 'Delivered', icon: CheckCircle2, desc: 'Completed' },
+                ];
 
+                const progressWidths = ['0%', '33%', '66%', '100%'];
+
+                return (
+                  <div className="space-y-4">
+                    {/* Horizontal Progress Bar */}
+                    <div className="relative pt-6 pb-2">
+                      {/* Background Bar */}
+                      <div className="absolute top-9 left-6 right-6 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#50007c] via-purple-600 to-emerald-500 transition-all duration-700 rounded-full shadow-xs"
+                          style={{ width: progressWidths[currentIdx] }}
+                        />
+                      </div>
+
+                      {/* Milestone Nodes */}
+                      <div className="relative z-10 grid grid-cols-4 gap-1 text-center">
+                        {milestones.map((m, idx) => {
+                          const isCompleted = idx < currentIdx;
+                          const isCurrent = idx === currentIdx;
+                          const IconComponent = m.icon;
+
+                          return (
+                            <div key={idx} className="flex flex-col items-center group">
+                              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all shadow-xs ${
+                                isCompleted 
+                                  ? 'bg-emerald-600 text-white shadow-emerald-200' 
+                                  : isCurrent 
+                                  ? 'bg-[#50007c] text-white ring-4 ring-purple-100 shadow-purple-300 animate-pulse' 
+                                  : 'bg-white border border-slate-200 text-slate-400'
+                              }`}>
+                                <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
+                              </div>
+                              <p className={`text-[11px] sm:text-xs font-black mt-2 ${isCurrent ? 'text-[#50007c]' : isCompleted ? 'text-slate-800' : 'text-slate-400'}`}>
+                                {m.label}
+                              </p>
+                              <p className="text-[10px] text-slate-400 hidden sm:block mt-0.5 truncate">
+                                {m.desc}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-purple-50/60 rounded-xl border border-purple-100 text-center">
+                      <p className="text-xs text-slate-700 font-medium">
+                        Current Milestone: <strong className="text-[#50007c]">{milestones[currentIdx].label}</strong> ({foundOrder.status}) at Shivani Graphics, Mahavir Enclave, New Delhi.
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Action Bar */}

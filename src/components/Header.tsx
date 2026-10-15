@@ -112,18 +112,36 @@ export const Header: React.FC<HeaderProps> = ({
             <button 
               type="button"
               onClick={onNavigateHome}
-              className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer text-left"
+              className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer text-left"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-[#50007c] via-purple-700 to-orange-500 flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-xs group-hover:scale-105 transition-transform">
-                SG
+              <div className="relative">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#50007c] flex items-center justify-center text-white font-black text-sm sm:text-base shadow-md group-hover:scale-105 transition-transform overflow-hidden border-2 border-purple-200">
+                  <img 
+                    src="https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg" 
+                    alt="Shivani Graphics Logo" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#50007c] -z-10 text-white font-black">
+                    SG
+                  </div>
+                </div>
+                <span className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[9px] font-black px-1 rounded-md shadow-xs">
+                  SG
+                </span>
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center font-sans font-black text-xl sm:text-2xl tracking-tight leading-none">
                   <span className="text-[#50007c]">Shivani</span>
                   <span className="text-orange-500 ml-1">Graphics</span>
                 </div>
-                <span className="text-[9px] sm:text-[10px] text-slate-500 font-semibold tracking-tight -mt-0.5 group-hover:text-orange-600 transition-colors">
-                  Digital Prints & Signages
+                <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold tracking-tight mt-0.5 group-hover:text-orange-600 transition-colors flex items-center gap-1">
+                  <span>⚡ 5-Min Print Press</span>
+                  <span className="text-purple-400">·</span>
+                  <span>Delhi NCR</span>
                 </span>
               </div>
             </button>

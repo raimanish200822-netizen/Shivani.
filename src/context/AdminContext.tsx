@@ -564,6 +564,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateProduct = async (updatedProd: ProductItem) => {
     try {
+      setProducts(prev => prev.map(p => p.id === updatedProd.id ? updatedProd : p));
       await setDoc(doc(db, 'products', updatedProd.id), updatedProd, { merge: true });
       logAction(`Updated product: ${updatedProd.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -573,6 +574,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addProduct = async (newProd: ProductItem) => {
     try {
+      setProducts(prev => [newProd, ...prev]);
       await setDoc(doc(db, 'products', newProd.id), newProd);
       logAction(`Added new product: ${newProd.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -583,6 +585,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const deleteProduct = async (id: string) => {
     const p = products.find(x => x.id === id);
     try {
+      setProducts(prev => prev.filter(x => x.id !== id));
       await deleteDoc(doc(db, 'products', id));
       logAction(`Deleted product: ${p?.title || id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -592,6 +595,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateOrderStatus = async (id: string, status: AdminOrder['status']) => {
     try {
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
       await updateDoc(doc(db, 'orders', id), { status });
       logAction(`Updated order ${id} status to ${status}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -601,6 +605,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const saveOrder = async (order: AdminOrder) => {
     try {
+      setOrders(prev => {
+        const exists = prev.some(o => o.id === order.id);
+        if (exists) return prev.map(o => o.id === order.id ? order : o);
+        return [order, ...prev];
+      });
       await setDoc(doc(db, 'orders', order.id), order, { merge: true });
       await setDoc(doc(db, 'invoices', order.id), {
         id: order.id,
@@ -624,6 +633,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const deleteOrder = async (id: string) => {
     try {
+      setOrders(prev => prev.filter(o => o.id !== id));
       await deleteDoc(doc(db, 'orders', id));
       logAction(`Deleted order ID: ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
