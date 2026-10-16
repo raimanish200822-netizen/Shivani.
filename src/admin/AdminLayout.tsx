@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, ShoppingBag, Package, Image, FileText, Users, CreditCard, 
-  PackageOpen, Tag, Star, BarChart2, ShieldCheck, Settings, Activity, LogOut, Menu, X, ExternalLink, Layers, Database, HelpCircle, Building2, Sparkles, User 
+  PackageOpen, Tag, Star, BarChart2, ShieldCheck, Settings, Activity, LogOut, Menu, X, ExternalLink, Layers, Database, HelpCircle, Building2, Sparkles, User, Rocket 
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { LogoSettingsView } from './LogoSettingsView';
@@ -20,6 +20,7 @@ import { AnalyticsView } from './AnalyticsView';
 import { CustomersView } from './CustomersView';
 import { CrmOrdersView } from './CrmOrdersView';
 import { FounderManagementView } from './FounderManagementView';
+import { LaunchCountdownView } from './LaunchCountdownView';
 import { CachedImage } from '../services/imageService';
 
 interface AdminLayoutProps {
@@ -122,6 +123,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite, onNav
       ]
     },
     {
+      title: 'Store Launch & Live Mode',
+      items: [
+        { id: 'launch-countdown', label: 'Launch Countdown Mode 🚀', icon: <Rocket className="w-4 h-4 text-amber-400" /> },
+      ]
+    },
+    {
       title: 'System & Admin',
       items: [
         { id: 'founder', label: 'Founder & Photo (Ranjan Roy)', icon: <User className="w-4 h-4 text-purple-400" /> },
@@ -137,6 +144,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite, onNav
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <DashboardView onNavigateTab={(tab) => navigateTo(tab)} />;
+      case 'launch-countdown': return <LaunchCountdownView />;
       case 'analytics': return <AnalyticsView />;
       case 'database': return <DatabaseView />;
       case 'orders': return <OrdersView />;

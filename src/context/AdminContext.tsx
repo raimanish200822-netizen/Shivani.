@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PRODUCTS, CATEGORIES } from '../data/products';
 import { ProductItem, FaqItem, AboutUsItem } from '../types';
 import { FAQS } from '../data/faqs';
-import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType, isFirestoreQuotaExceeded } from '../firebase';
+import { collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { preloadCoreBrandAssets, preloadImages, recordImageLoaded } from '../services/imageService';
 
 export interface AdminUser {
@@ -130,6 +130,18 @@ export interface AdminCustomer {
   createdAt?: string;
 }
 
+export interface LaunchCountdownSettings {
+  enabled: boolean;
+  targetDate: string; // ISO format e.g. "2026-10-25T10:00:00"
+  title: string;
+  subtitle: string;
+  badgeText: string;
+  showWhatsAppButton: boolean;
+  showPhoneCall: boolean;
+  showStoreAddress: boolean;
+  allowAdminBypass: boolean;
+}
+
 interface AdminContextType {
   isAdminLoggedIn: boolean;
   currentAdminUser: AdminUser | null;
@@ -139,6 +151,7 @@ interface AdminContextType {
   updateProduct: (product: ProductItem) => Promise<void>;
   addProduct: (product: ProductItem) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  resetToDefaultProducts?: () => Promise<void>;
   orders: AdminOrder[];
   updateOrderStatus: (id: string, status: AdminOrder['status']) => Promise<void>;
   saveOrder: (order: AdminOrder) => Promise<void>;
@@ -206,8 +219,12 @@ interface AdminContextType {
   siteLogo: string;
   updateSiteLogo: (url: string) => Promise<void>;
   deleteSiteLogo: () => Promise<void>;
+  launchCountdown: LaunchCountdownSettings;
+  updateLaunchCountdown: (settings: LaunchCountdownSettings) => Promise<void>;
+  toggleLaunchCountdown: (enabled: boolean) => Promise<void>;
   logAction: (action: string, adminName: string) => void;
   isFirebaseLoading: boolean;
+  isQuotaExceeded: boolean;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -221,14 +238,42 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const CACHE_KEY_BANNERS = 'shivani_cached_website_images';
   const CACHE_KEY_CONTENT = 'shivani_cached_website_content';
   const CACHE_KEY_PRODUCTS = 'shivani_cached_products';
+  const CACHE_KEY_COUNTDOWN = 'shivani_cached_launch_countdown';
+
+  const DEFAULT_LAUNCH_COUNTDOWN: LaunchCountdownSettings = {
+    enabled: false,
+    targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    title: '🚀 Shivani Graphics Digital Webstore Launching Soon!',
+    subtitle: 'We are preparing Delhi NCR\'s most advanced 5-minute digital printing counter & online catalog. Stay tuned for our grand opening!',
+    badgeText: 'Official Grand Opening Countdown',
+    showWhatsAppButton: true,
+    showPhoneCall: true,
+    showStoreAddress: true,
+    allowAdminBypass: true
+  };
+
+  const [launchCountdown, setLaunchCountdown] = useState<LaunchCountdownSettings>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY_COUNTDOWN);
+      if (cached) {
+        return { ...DEFAULT_LAUNCH_COUNTDOWN, ...JSON.parse(cached) };
+      }
+    } catch {}
+    return DEFAULT_LAUNCH_COUNTDOWN;
+  });
 
   const [products, setProducts] = useState<ProductItem[]>(() => {
     try {
+      const rawDeleted = localStorage.getItem('shivani_deleted_product_ids');
+      const deletedIds: string[] = rawDeleted ? JSON.parse(rawDeleted) : [];
       const cached = localStorage.getItem(CACHE_KEY_PRODUCTS);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.filter(p => p && p.id && !deletedIds.includes(p.id));
+        }
       }
+      return PRODUCTS.filter(p => p && p.id && !deletedIds.includes(p.id));
     } catch {}
     return PRODUCTS;
   });
@@ -328,127 +373,153 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(true);
+  const [isQuotaExceeded, setIsQuotaExceeded] = useState(() => isFirestoreQuotaExceeded());
 
   // Real-time Firestore onSnapshot listeners
   useEffect(() => {
     // Preload core brand assets into session storage immediately
     preloadCoreBrandAssets(siteLogo);
 
-    // 1. Products Listener
-    const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-      const firestoreItems = snapshot.docs.map(doc => doc.data() as ProductItem);
-      const firestoreIds = new Set(firestoreItems.map(p => p.id));
-      const merged = [...firestoreItems];
-      PRODUCTS.forEach(p => {
-        if (!firestoreIds.has(p.id)) {
-          merged.push(p);
-          setDoc(doc(db, 'products', p.id), p).catch(() => {});
-        }
-      });
-      setProducts(merged);
-      try {
-        localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(merged));
-      } catch {}
-      // Preload top products into browser memory & session cache
-      preloadImages(merged.slice(0, 10).map(p => p.images?.[0]?.url));
+    // If quota was already hit today, run in offline local cache mode without throwing
+    if (isFirestoreQuotaExceeded()) {
+      setIsQuotaExceeded(true);
       setIsFirebaseLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'products');
-    });
+      console.warn('[AdminContext] Running in Local Storage / Offline Cache mode (Firestore quota limit).');
+      return;
+    }
+
+    const onListenerError = (path: string) => (error: any) => {
+      const err = handleFirestoreError(error, OperationType.GET, path);
+      if (err?.code === 'resource-exhausted' || isFirestoreQuotaExceeded()) {
+        setIsQuotaExceeded(true);
+      }
+      setIsFirebaseLoading(false);
+    };
+
+    // 1. Products Listener (Source of Truth: Firestore, Deleted items stay deleted)
+    const unsubProducts = onSnapshot(collection(db, 'products'), async (snapshot) => {
+      let deletedIds: string[] = [];
+      try {
+        const raw = localStorage.getItem('shivani_deleted_product_ids');
+        if (raw) deletedIds = JSON.parse(raw);
+      } catch {}
+
+      if (snapshot.empty) {
+        try {
+          const initDoc = await getDoc(doc(db, 'settings', 'catalog_init'));
+          if (!initDoc || !initDoc.exists()) {
+            const initialSeed = PRODUCTS.filter(p => !deletedIds.includes(p.id));
+            for (const p of initialSeed) {
+              setDoc(doc(db, 'products', p.id), p).catch(() => {});
+            }
+            await setDoc(doc(db, 'settings', 'catalog_init'), { initialized: true, date: new Date().toISOString() }).catch(() => {});
+            setProducts(initialSeed);
+            try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(initialSeed)); } catch {}
+            setIsFirebaseLoading(false);
+            return;
+          }
+        } catch {
+          // In case settings check errors, don't block
+        }
+      }
+
+      const firestoreItems = snapshot.docs
+        .map(doc => doc.data() as ProductItem)
+        .filter(p => p && p.id && !deletedIds.includes(p.id));
+
+      setProducts(firestoreItems);
+      try {
+        localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(firestoreItems));
+      } catch {}
+      preloadImages(firestoreItems.slice(0, 10).map(p => p.images?.[0]?.url));
+      setIsFirebaseLoading(false);
+    }, onListenerError('products'));
 
     // 2. Banners / Website Images Listener
     const unsubBanners = onSnapshot(collection(db, 'banners'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as WebsiteImage));
+      setWebsiteImages(items);
+      try {
+        localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(items));
+      } catch {}
       if (items.length > 0) {
-        setWebsiteImages(items);
-        try {
-          localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(items));
-        } catch {}
-        // Preload banner images into session cache
         preloadImages(items.map(b => b.url));
       }
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'banners');
-    });
+    }, onListenerError('banners'));
 
     // 3. Orders Listener
     const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminOrder));
       setOrders(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'orders');
-    });
+    }, onListenerError('orders'));
 
     // 4. Invoices Listener
     const unsubInvoices = onSnapshot(collection(db, 'invoices'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as InvoiceRecord));
       setInvoices(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'invoices');
-    });
+    }, onListenerError('invoices'));
 
     // 4b. Customers Listener
     const unsubCustomers = onSnapshot(collection(db, 'customers'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminCustomer));
       setCustomers(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'customers');
-    });
+    }, onListenerError('customers'));
 
     // 5. Quotes Listener
     const unsubQuotes = onSnapshot(collection(db, 'quotes'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminQuote));
       setQuotes(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'quotes');
-    });
+    }, onListenerError('quotes'));
 
-    // 6. Reviews Listener
-    const unsubReviews = onSnapshot(collection(db, 'reviews'), (snapshot) => {
+    // 6. Reviews Listener (Deleted reviews stay deleted)
+    const unsubReviews = onSnapshot(collection(db, 'reviews'), async (snapshot) => {
+      if (snapshot.empty) {
+        try {
+          const initDoc = await getDoc(doc(db, 'settings', 'reviews_init'));
+          if (!initDoc || !initDoc.exists()) {
+            for (const r of INITIAL_REVIEWS) {
+              setDoc(doc(db, 'reviews', r.id), r).catch(() => {});
+            }
+            await setDoc(doc(db, 'settings', 'reviews_init'), { initialized: true }).catch(() => {});
+            setReviews(INITIAL_REVIEWS);
+            return;
+          }
+        } catch {}
+      }
       const firestoreReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as ReviewItem));
-      const merged = [...firestoreReviews];
-      const firestoreIds = new Set(firestoreReviews.map(r => r.id));
-      INITIAL_REVIEWS.forEach(r => {
-        if (!firestoreIds.has(r.id)) {
-          merged.push(r);
-          setDoc(doc(db, 'reviews', r.id), r).catch(() => {});
-        }
-      });
-      setReviews(merged);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'reviews');
-    });
+      setReviews(firestoreReviews);
+    }, onListenerError('reviews'));
 
     // 7. Coupons Listener
     const unsubCoupons = onSnapshot(collection(db, 'coupons'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as CouponItem));
       setCoupons(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'coupons');
-    });
+    }, onListenerError('coupons'));
 
     // 8. Inventory Listener
     const unsubInventory = onSnapshot(collection(db, 'inventory'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as InventoryItem));
       setInventory(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'inventory');
-    });
+    }, onListenerError('inventory'));
 
-    // 8b. Categories Listener
-    const unsubCategories = onSnapshot(collection(db, 'categories'), (snapshot) => {
+    // 8b. Categories Listener (Deleted categories stay deleted)
+    const unsubCategories = onSnapshot(collection(db, 'categories'), async (snapshot) => {
+      if (snapshot.empty) {
+        try {
+          const initDoc = await getDoc(doc(db, 'settings', 'categories_init'));
+          if (!initDoc || !initDoc.exists()) {
+            for (const c of CATEGORIES) {
+              setDoc(doc(db, 'categories', c.id), c).catch(() => {});
+            }
+            await setDoc(doc(db, 'settings', 'categories_init'), { initialized: true }).catch(() => {});
+            setCategories(CATEGORIES);
+            return;
+          }
+        } catch {}
+      }
       const firestoreCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const merged = [...firestoreCategories];
-      CATEGORIES.forEach(c => {
-        if (!merged.find((item: any) => item.id === c.id)) {
-          merged.push(c);
-          setDoc(doc(db, 'categories', c.id), c).catch(() => {});
-        }
-      });
-      setCategories(merged);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'categories');
-    });
+      setCategories(firestoreCategories);
+    }, onListenerError('categories'));
 
     // 9. Website Content Listener
     const unsubContent = onSnapshot(doc(db, 'content', 'site_content'), (docSnap) => {
@@ -461,32 +532,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (data.companyImageUrl) localStorage.setItem('shivani_company_photo', data.companyImageUrl);
         } catch {}
       }
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'content/site_content');
-    });
+    }, onListenerError('content/site_content'));
 
     // 10. FAQs Listener
     const unsubFaqs = onSnapshot(collection(db, 'faqs'), (snapshot) => {
       const items = snapshot.docs.map(doc => doc.data() as FaqItem);
       setFaqs(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'faqs');
-    });
+    }, onListenerError('faqs'));
 
     // 11. AboutUs Listener
     const unsubAboutUs = onSnapshot(collection(db, 'about_us'), (snapshot) => {
       const items = snapshot.docs.map(doc => doc.data() as AboutUsItem);
       setAboutUs(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'about_us');
-    });
+    }, onListenerError('about_us'));
 
     // 12. Visitor Stats Listener & Session Increment
     const unsubVisitors = onSnapshot(doc(db, 'analytics', 'visitor_stats'), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as VisitorStats;
         setVisitorStats(data);
-        if (!sessionStorage.getItem('shivani_visitor_tracked')) {
+        if (!sessionStorage.getItem('shivani_visitor_tracked') && !isFirestoreQuotaExceeded()) {
           sessionStorage.setItem('shivani_visitor_tracked', 'true');
           const newTotal = (data.totalVisitors || 4450) + 1;
           const newToday = (data.todayVisitors || 342) + 1;
@@ -510,12 +575,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             { day: 'Sun', visitors: 650, inquiries: 80, orders: 28 },
           ]
         };
-        setDoc(doc(db, 'analytics', 'visitor_stats'), initialStats).catch(() => {});
+        if (!isFirestoreQuotaExceeded()) {
+          setDoc(doc(db, 'analytics', 'visitor_stats'), initialStats).catch(() => {});
+        }
         setVisitorStats(initialStats);
       }
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'analytics/visitor_stats');
-    });
+    }, onListenerError('analytics/visitor_stats'));
 
     // 13. Logo Branding Listener
     const unsubLogo = onSnapshot(doc(db, 'settings', 'branding'), (docSnap) => {
@@ -529,12 +594,23 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } else {
         const defaultLogo = '/logo.jpg';
         recordImageLoaded(defaultLogo);
-        setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true }).catch(() => {});
+        if (!isFirestoreQuotaExceeded()) {
+          setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true }).catch(() => {});
+        }
         setSiteLogo(defaultLogo);
       }
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'settings/branding');
-    });
+    }, onListenerError('settings/branding'));
+
+    // 14. Launch Countdown Settings Listener
+    const unsubCountdown = onSnapshot(doc(db, 'settings', 'launch_countdown'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as LaunchCountdownSettings;
+        setLaunchCountdown(prev => ({ ...prev, ...data }));
+        try {
+          localStorage.setItem(CACHE_KEY_COUNTDOWN, JSON.stringify(data));
+        } catch {}
+      }
+    }, onListenerError('settings/launch_countdown'));
 
     return () => {
       unsubProducts();
@@ -551,6 +627,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       unsubAboutUs();
       unsubVisitors();
       unsubLogo();
+      unsubCountdown();
     };
   }, []);
 
@@ -582,6 +659,28 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const updateLaunchCountdown = async (settings: LaunchCountdownSettings) => {
+    console.log(`[Firestore Admin] Updating Launch Countdown settings (enabled: ${settings.enabled}, targetDate: ${settings.targetDate})...`);
+    setLaunchCountdown(settings);
+    try {
+      localStorage.setItem(CACHE_KEY_COUNTDOWN, JSON.stringify(settings));
+    } catch {}
+    logAction(`Updated Website Launch Countdown (Enabled: ${settings.enabled})`, currentAdminUser?.name || 'Admin');
+
+    if (!isFirestoreQuotaExceeded()) {
+      try {
+        await setDoc(doc(db, 'settings', 'launch_countdown'), settings, { merge: true });
+        console.log('[Firestore Admin] ✓ Launch countdown settings updated in Firestore.');
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, 'settings/launch_countdown');
+      }
+    }
+  };
+
+  const toggleLaunchCountdown = async (enabled: boolean) => {
+    await updateLaunchCountdown({ ...launchCountdown, enabled });
+  };
+
   const login = (user: AdminUser) => {
     setIsAdminLoggedIn(true);
     setCurrentAdminUser(user);
@@ -607,45 +706,103 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateProduct = async (updatedProd: ProductItem) => {
-    try {
-      setProducts(prev => {
-        const next = prev.map(p => p.id === updatedProd.id ? updatedProd : p);
-        try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
-        return next;
-      });
-      await setDoc(doc(db, 'products', updatedProd.id), updatedProd, { merge: true });
-      logAction(`Updated product: ${updatedProd.title}`, currentAdminUser?.name || 'Admin');
-    } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `products/${updatedProd.id}`);
+    console.log(`[Firestore Admin] Updating product ${updatedProd.id} (${updatedProd.title})...`);
+    // 1. Immediately update state & cache
+    setProducts(prev => {
+      const next = prev.map(p => p.id === updatedProd.id ? updatedProd : p);
+      try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
+      return next;
+    });
+    logAction(`Updated product: ${updatedProd.title}`, currentAdminUser?.name || 'Admin');
+
+    // 2. Sync to Firestore if quota allows
+    if (!isFirestoreQuotaExceeded()) {
+      try {
+        await setDoc(doc(db, 'products', updatedProd.id), updatedProd, { merge: true });
+        console.log(`[Firestore Admin] ✓ Product ${updatedProd.id} successfully updated in Firestore.`);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.UPDATE, `products/${updatedProd.id}`);
+      }
     }
   };
 
   const addProduct = async (newProd: ProductItem) => {
+    console.log(`[Firestore Admin] Adding new product ${newProd.id} (${newProd.title})...`);
     try {
-      setProducts(prev => {
-        const next = [newProd, ...prev];
-        try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
-        return next;
-      });
-      await setDoc(doc(db, 'products', newProd.id), newProd);
-      logAction(`Added new product: ${newProd.title}`, currentAdminUser?.name || 'Admin');
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `products/${newProd.id}`);
+      const raw = localStorage.getItem('shivani_deleted_product_ids');
+      if (raw) {
+        const deleted: string[] = JSON.parse(raw);
+        const filtered = deleted.filter(x => x !== newProd.id);
+        localStorage.setItem('shivani_deleted_product_ids', JSON.stringify(filtered));
+      }
+    } catch {}
+
+    setProducts(prev => {
+      const next = [newProd, ...prev.filter(p => p.id !== newProd.id)];
+      try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
+      return next;
+    });
+    logAction(`Added new product: ${newProd.title}`, currentAdminUser?.name || 'Admin');
+
+    if (!isFirestoreQuotaExceeded()) {
+      try {
+        await setDoc(doc(db, 'products', newProd.id), newProd);
+        console.log(`[Firestore Admin] ✓ Product ${newProd.id} successfully created in Firestore.`);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.CREATE, `products/${newProd.id}`);
+      }
     }
   };
 
   const deleteProduct = async (id: string) => {
     const p = products.find(x => x.id === id);
+    console.log(`[Firestore Admin] Deleting product ${id} (${p?.title || 'Unknown'})...`);
+    // 1. Immediately remove from active state
+    setProducts(prev => {
+      const next = prev.filter(x => x.id !== id);
+      try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    // 2. Track permanently in localStorage so local fallbacks never resurrect it
     try {
-      setProducts(prev => {
-        const next = prev.filter(x => x.id !== id);
-        try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
-        return next;
-      });
-      await deleteDoc(doc(db, 'products', id));
-      logAction(`Deleted product: ${p?.title || id}`, currentAdminUser?.name || 'Admin');
-    } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `products/${id}`);
+      const raw = localStorage.getItem('shivani_deleted_product_ids');
+      const deleted: string[] = raw ? JSON.parse(raw) : [];
+      if (!deleted.includes(id)) {
+        deleted.push(id);
+        localStorage.setItem('shivani_deleted_product_ids', JSON.stringify(deleted));
+      }
+    } catch {}
+
+    logAction(`Deleted product: ${p?.title || id}`, currentAdminUser?.name || 'Admin');
+
+    // 3. Delete from Firestore if quota allows
+    if (!isFirestoreQuotaExceeded()) {
+      try {
+        await deleteDoc(doc(db, 'products', id));
+        console.log(`[Firestore Admin] ✓ Product ${id} permanently deleted from Firestore.`);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.DELETE, `products/${id}`);
+      }
+    }
+  };
+
+  const resetToDefaultProducts = async () => {
+    console.log('[Firestore Admin] Resetting product catalog to default templates...');
+    localStorage.removeItem('shivani_deleted_product_ids');
+    setProducts(PRODUCTS);
+    try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(PRODUCTS)); } catch {}
+    logAction(`Reset products catalog to default templates`, currentAdminUser?.name || 'Admin');
+
+    if (!isFirestoreQuotaExceeded()) {
+      try {
+        for (const p of PRODUCTS) {
+          await setDoc(doc(db, 'products', p.id), p);
+        }
+        console.log('[Firestore Admin] ✓ Product catalog reset to default templates successfully.');
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, 'products');
+      }
     }
   };
 
@@ -950,6 +1107,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updateProduct,
       addProduct,
       deleteProduct,
+      resetToDefaultProducts,
       orders,
       updateOrderStatus,
       saveOrder,
@@ -992,8 +1150,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       siteLogo,
       updateSiteLogo,
       deleteSiteLogo,
+      launchCountdown,
+      updateLaunchCountdown,
+      toggleLaunchCountdown,
       logAction,
-      isFirebaseLoading
+      isFirebaseLoading,
+      isQuotaExceeded
     }}>
       {children}
     </AdminContext.Provider>

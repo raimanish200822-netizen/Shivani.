@@ -8,16 +8,25 @@ export const BannersImagesView: React.FC = () => {
   const [editingImage, setEditingImage] = useState<WebsiteImage | null>(null);
   const [isNew, setIsNew] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingImage) return;
-    if (isNew) {
-      addWebsiteImage(editingImage);
-    } else {
-      updateWebsiteImage(editingImage);
+    setIsSaving(true);
+    try {
+      if (isNew) {
+        await addWebsiteImage(editingImage);
+      } else {
+        await updateWebsiteImage(editingImage);
+      }
+      setEditingImage(null);
+      setIsNew(false);
+    } catch (err: any) {
+      alert(`Error saving banner: ${err?.message || 'Unknown error'}`);
+    } finally {
+      setIsSaving(false);
     }
-    setEditingImage(null);
-    setIsNew(false);
   };
 
   const handleAddNew = () => {

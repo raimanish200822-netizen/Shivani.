@@ -96,9 +96,25 @@
         "category": { "type": "string", "maxLength": 50 }
       },
       "required": ["id", "question", "answer"]
+    },
+    "LaunchSettings": {
+      "title": "Launch Settings Entity",
+      "description": "Website grand launch countdown and coming soon mode settings",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "targetDate": { "type": "string" },
+        "title": { "type": "string", "maxLength": 300 },
+        "subtitle": { "type": "string", "maxLength": 1000 }
+      },
+      "required": ["enabled", "targetDate", "title"]
     }
   },
   "firestore": {
+    "/settings/{settingId}": {
+      "schema": "LaunchSettings",
+      "description": "System settings and launch countdown configuration"
+    },
     "/products/{productId}": {
       "schema": "Product",
       "description": "Print products catalog"

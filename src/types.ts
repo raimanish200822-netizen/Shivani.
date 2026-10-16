@@ -51,6 +51,7 @@ export interface ProductItem {
   reviewCount: number;
   dispatchTag: string;
   minPrice?: number;
+  basePrice?: number;
   badge?: string;
   subtitle?: string;
   featureBadge?: string;

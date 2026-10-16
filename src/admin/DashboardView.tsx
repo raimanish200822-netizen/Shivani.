@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   TrendingUp, ShoppingBag, Clock, DollarSign, Package, Users, MessageSquare, 
-  AlertTriangle, CheckCircle, Plus, FileText, Tag, Image, ArrowRight, ShieldCheck, User 
+  AlertTriangle, CheckCircle, Plus, FileText, Tag, Image, ArrowRight, ShieldCheck, User, Rocket, Power 
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -11,7 +11,7 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigateTab }) => {
-  const { orders, products, quotes, inventory, reviews } = useAdmin();
+  const { orders, products, quotes, inventory, reviews, launchCountdown, toggleLaunchCountdown } = useAdmin();
 
   const totalRevenue = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
   const newOrdersCount = orders.filter(o => o.status === 'New').length;
@@ -73,8 +73,91 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigateTab }) =
           >
             <User className="w-4 h-4" /> Founder Photo
           </button>
+          <button
+            onClick={() => onNavigateTab('launch-countdown')}
+            className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <Rocket className="w-4 h-4" /> Launch Countdown
+          </button>
         </div>
       </div>
+
+      {/* Website Launch Countdown Quick Bar */}
+      {(() => {
+        const targetTime = new Date(launchCountdown.targetDate).getTime();
+        const nowTime = Date.now();
+        const timeDiff = targetTime - nowTime;
+        const isCountdownExpired = timeDiff <= 0;
+        const daysLeft = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
+        const hoursLeft = Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+        const minsLeft = Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60)));
+
+        return (
+          <div className={`p-4 sm:p-5 rounded-2xl border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm ${
+            launchCountdown.enabled 
+              ? 'bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border-purple-500/40 text-white' 
+              : 'bg-white border-slate-200 text-slate-800'
+          }`}>
+            <div className="flex items-center gap-3.5">
+              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                launchCountdown.enabled ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20' : 'bg-slate-100 text-slate-500'
+              }`}>
+                <Rocket className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                    launchCountdown.enabled 
+                      ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' 
+                      : 'bg-slate-100 text-slate-600 border border-slate-200'
+                  }`}>
+                    {launchCountdown.enabled ? '● Website Launch Mode: ACTIVE' : '○ Store is Normal Live'}
+                  </span>
+                  {launchCountdown.enabled && (
+                    <span className="text-[11px] text-purple-200 font-bold">
+                      Target Launch: {new Date(launchCountdown.targetDate).toLocaleDateString()} {new Date(launchCountdown.targetDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
+                </div>
+                <p className={`text-xs font-bold ${launchCountdown.enabled ? 'text-slate-200' : 'text-slate-600'}`}>
+                  {launchCountdown.enabled 
+                    ? (isCountdownExpired 
+                        ? '🎉 Launch date has arrived! Visitors can enter the live webstore.'
+                        : `⏳ ${daysLeft > 0 ? `${daysLeft} Days ` : ''}${hoursLeft} Hours ${minsLeft} Minutes remaining. Visitors are seeing the Launch Countdown Screen.`)
+                    : 'Launch countdown is currently off. Visitors have full direct access to the website & catalog.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => onNavigateTab('launch-countdown')}
+                className={`flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm ${
+                  launchCountdown.enabled 
+                    ? 'bg-purple-600 hover:bg-purple-500 text-white' 
+                    : 'bg-slate-900 hover:bg-slate-800 text-white'
+                }`}
+              >
+                <span>Launch Settings & Time</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleLaunchCountdown(!launchCountdown.enabled)}
+                className={`flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  launchCountdown.enabled 
+                    ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40' 
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300'
+                }`}
+              >
+                <Power className="w-3.5 h-3.5" />
+                <span>{launchCountdown.enabled ? 'Turn OFF' : 'Turn ON Countdown'}</span>
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

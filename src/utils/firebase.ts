@@ -24,10 +24,11 @@ export interface SupportLogData {
 
 /**
  * Synchronizes an order inquiry directly into Firestore under 'order_inquiries' collection.
+ * Falls back to local storage if Firestore quota is exhausted.
  */
 export async function syncOrderInquiry(data: OrderInquiryData): Promise<string> {
+  const inquiryId = `inq-${Date.now()}`;
   try {
-    const inquiryId = `inq-${Date.now()}`;
     const docRef = doc(db, 'order_inquiries', inquiryId);
     const payload = {
       id: inquiryId,
@@ -39,16 +40,24 @@ export async function syncOrderInquiry(data: OrderInquiryData): Promise<string> 
     return inquiryId;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, 'order_inquiries');
-    throw error;
+    // Store in local storage queue so inquiry is never lost
+    try {
+      const raw = localStorage.getItem('shivani_cached_inquiries');
+      const list = raw ? JSON.parse(raw) : [];
+      list.push({ id: inquiryId, ...data, createdAt: new Date().toISOString() });
+      localStorage.setItem('shivani_cached_inquiries', JSON.stringify(list));
+    } catch {}
+    return inquiryId;
   }
 }
 
 /**
  * Synchronizes a customer support log directly into Firestore under 'support_logs' collection.
+ * Falls back to local storage if Firestore quota is exhausted.
  */
 export async function syncSupportLog(data: SupportLogData): Promise<string> {
+  const logId = `log-${Date.now()}`;
   try {
-    const logId = `log-${Date.now()}`;
     const docRef = doc(db, 'support_logs', logId);
     const payload = {
       id: logId,
@@ -60,7 +69,13 @@ export async function syncSupportLog(data: SupportLogData): Promise<string> {
     return logId;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, 'support_logs');
-    throw error;
+    try {
+      const raw = localStorage.getItem('shivani_cached_support_logs');
+      const list = raw ? JSON.parse(raw) : [];
+      list.push({ id: logId, ...data, createdAt: new Date().toISOString() });
+      localStorage.setItem('shivani_cached_support_logs', JSON.stringify(list));
+    } catch {}
+    return logId;
   }
 }
 

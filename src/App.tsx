@@ -21,6 +21,7 @@ import { playWelcomeVoiceGreeting, hasBeenGreeted, isVoiceMuted } from './utils/
 import { addRecentlyViewedId } from './utils/recentlyViewed';
 import { useAdmin } from './context/AdminContext';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { LaunchCountdownPage } from './components/LaunchCountdownPage';
 
 // Dedicated Separate Sub-Pages (Replacing Popups/Modals)
 import { TermsPage } from './components/pages/TermsPage';
@@ -48,7 +49,8 @@ export type AppView =
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
-  const { products } = useAdmin();
+  const { products, launchCountdown, isAdminLoggedIn } = useAdmin();
+  const [adminBypassCountdown, setAdminBypassCountdown] = useState(false);
   const [activeProductId, setActiveProductId] = useState<string>(PRODUCTS[0].id);
   const activeProduct = products.find(p => p.id === activeProductId) || products[0] || PRODUCTS[0];
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -164,9 +166,45 @@ export default function App() {
     );
   }
 
+  // 0. Website Launch Countdown Mode: If active, public visitors see the Grand Launch Countdown page
+  if (launchCountdown.enabled && !adminBypassCountdown) {
+    return (
+      <LaunchCountdownPage 
+        onOpenAdminLogin={() => navigateTo('admin')}
+        onEnterStore={() => setAdminBypassCountdown(true)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-[#50007c] selection:text-white">
       
+      {/* Admin Bypass Warning Notification Bar */}
+      {launchCountdown.enabled && adminBypassCountdown && (
+        <div className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 px-4 py-2.5 text-xs font-black flex flex-col sm:flex-row items-center justify-between gap-2 sticky top-0 z-50 shadow-md border-b border-amber-500">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shrink-0" />
+            <span>⚠️ ADMIN PREVIEW MODE: Public visitors currently see the Website Launch Countdown page.</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setAdminBypassCountdown(false)}
+              className="px-3 py-1 bg-slate-950 hover:bg-slate-800 text-white rounded-lg transition-colors text-[11px] font-bold cursor-pointer"
+            >
+              Show Countdown Screen
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo('admin')}
+              className="px-3 py-1 bg-[#50007c] hover:bg-purple-900 text-white rounded-lg transition-colors text-[11px] font-bold cursor-pointer"
+            >
+              Open Admin Portal
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1. Top Purple Announcement Bar */}
       <TopBanner />
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Upload, 
   CheckCircle, 
@@ -9,7 +9,8 @@ import {
   Link as LinkIcon,
   ChevronDown,
   ChevronUp,
-  Camera
+  Camera,
+  Loader2
 } from 'lucide-react';
 import { uploadImageFile } from '../utils/firebaseStorage';
 
@@ -30,86 +31,51 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [uploading, setUploading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [localPreview, setLocalPreview] = useState<string>('');
   
-  // Optional URL mode toggle (kept collapsed so normal users only see pure gallery upload)
+  // Optional URL mode toggle (collapsed by default)
   const [showUrlOption, setShowUrlOption] = useState(false);
   const [urlInput, setUrlInput] = useState('');
 
-  // Compress & convert file directly to permanent database image
-  const compressImage = (inputFile: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const rawData = uploadEvent.target?.result as string;
-        if (!rawData) {
-          reject(new Error('Failed to read image file'));
-          return;
-        }
-        const img = new Image();
-        img.onload = () => {
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
-          let width = img.width;
-          let height = img.height;
+  // Clear local preview if external value resets or changes
+  useEffect(() => {
+    if (!value) {
+      setLocalPreview('');
+    }
+  }, [value]);
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width = Math.round((width * MAX_HEIGHT) / height);
-              height = MAX_HEIGHT;
-            }
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            resolve(rawData);
-            return;
-          }
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
-          resolve(compressedBase64);
-        };
-        img.onerror = () => resolve(rawData);
-        img.src = rawData;
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(inputFile);
-    });
-  };
-
-  // Pure Phone / PC Gallery File Selection
+  // Gallery File Selection with Instant Preview + Resilient Multi-tier Upload
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 20 * 1024 * 1024) {
-      setErrorMsg('Image size is too large. Please choose a photo under 20MB.');
+    if (file.size > 25 * 1024 * 1024) {
+      setErrorMsg('Image size is too large. Please select a photo under 25MB.');
       return;
     }
 
     setErrorMsg('');
     setUploading(true);
-    setStatusMessage('Uploading and permanently optimizing photo...');
+    setStatusMessage('Compressing & uploading photo...');
+
+    // Generate instant preview so user immediately sees their photo
+    try {
+      const previewUrl = URL.createObjectURL(file);
+      setLocalPreview(previewUrl);
+    } catch {}
 
     try {
       const permanentUrl = await uploadImageFile(file, folder);
       setUploading(false);
+      setLocalPreview('');
       onChange(permanentUrl);
-      setStatusMessage('✓ Photo uploaded and saved permanently! It will never expire.');
+      setStatusMessage('✓ Photo uploaded and permanently saved!');
       setTimeout(() => setStatusMessage(''), 4000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Gallery upload error:', err);
       setUploading(false);
-      setErrorMsg('Could not upload photo. Please try again.');
+      setErrorMsg(err?.message || 'Could not upload photo. Please try again.');
     } finally {
-      // Reset file input so user can pick same file again if desired
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -117,18 +83,22 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   };
 
   const handleRemovePhoto = () => {
+    setLocalPreview('');
     onChange('');
     setStatusMessage('');
     setErrorMsg('');
   };
 
-  // Advanced: only if user specifically wants to paste an internet URL
+  // Advanced: URL paste mode
   const handleApplyUrl = () => {
     if (!urlInput.trim()) return;
+    setLocalPreview('');
     onChange(urlInput.trim());
     setStatusMessage('✓ Web image link applied.');
     setTimeout(() => setStatusMessage(''), 3000);
   };
+
+  const displayImage = localPreview || value;
 
   return (
     <div className="space-y-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
@@ -139,7 +109,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           <Camera className="w-4 h-4 text-[#50007c]" />
           <span>{label}</span>
         </label>
-        {value && (
+        {displayImage && (
           <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
             <CheckCircle className="w-3 h-3 text-emerald-600" />
             Photo Active
@@ -152,12 +122,25 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         
         {/* Photo Thumbnail */}
         <div className="w-20 h-20 rounded-xl bg-white border border-slate-300 overflow-hidden shrink-0 flex items-center justify-center shadow-xs relative">
-          {value ? (
-            <img src={value} alt="Current Preview" className="w-full h-full object-cover" />
+          {displayImage ? (
+            <img 
+              src={displayImage} 
+              alt="Current Preview" 
+              className="w-full h-full object-cover" 
+              onError={() => {
+                if (localPreview) setLocalPreview('');
+              }}
+            />
           ) : (
             <div className="flex flex-col items-center justify-center text-slate-400 p-2 text-center">
               <ImageIcon className="w-7 h-7 text-slate-300" />
               <span className="text-[9px] mt-1 font-bold">No Photo</span>
+            </div>
+          )}
+
+          {uploading && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-2xs flex items-center justify-center text-white">
+              <Loader2 className="w-6 h-6 animate-spin text-purple-300" />
             </div>
           )}
         </div>
@@ -177,17 +160,27 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               type="button"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2.5 bg-[#50007c] hover:bg-purple-900 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+              className="px-4 py-2.5 bg-[#50007c] hover:bg-purple-900 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
             >
-              <Upload className="w-4 h-4" />
-              <span>{uploading ? 'Processing...' : value ? 'Change Photo from Gallery' : 'Upload from Phone Gallery / PC'}</span>
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Processing & Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>{displayImage ? 'Change Photo from Gallery' : 'Upload from Phone Gallery / PC'}</span>
+                </>
+              )}
             </button>
 
-            {value && (
+            {displayImage && (
               <button
                 type="button"
+                disabled={uploading}
                 onClick={handleRemovePhoto}
-                className="px-3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all cursor-pointer flex items-center gap-1.5"
+                className="px-3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Remove</span>
@@ -196,7 +189,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           </div>
 
           <p className="text-[11px] text-slate-500 font-medium">
-            Tap the button to pick any photo directly from your phone gallery or computer. No links required!
+            Tap the button to pick any photo directly from your gallery or files. Permanent cloud storage ensures it never vanishes after refresh.
           </p>
 
           {statusMessage && (
@@ -216,7 +209,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       </div>
 
-      {/* Optional: Collapsed Web Link Section (Only for rare edge cases, completely hidden by default) */}
+      {/* Optional: Collapsed Web Link Section */}
       <div className="pt-1 border-t border-slate-100">
         <button
           type="button"
@@ -224,14 +217,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           className="text-[11px] text-slate-400 hover:text-slate-600 font-medium flex items-center gap-1 cursor-pointer"
         >
           <LinkIcon className="w-3 h-3" />
-          <span>{showUrlOption ? 'Hide web link option' : 'Have a web link instead? (Optional)'}</span>
+          <span>{showUrlOption ? 'Hide web link option' : 'Have an image link instead? (Optional)'}</span>
           {showUrlOption ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
 
         {showUrlOption && (
           <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <p className="text-[11px] text-slate-600">
-              Only use this if you want to paste a public image URL from the web. Direct gallery upload above is recommended.
+              Paste an image URL from the web. Direct gallery upload above is recommended.
             </p>
             <div className="flex gap-2">
               <input
