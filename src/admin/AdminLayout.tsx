@@ -39,7 +39,7 @@ interface NavSection {
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite, onNavigateFounder }) => {
-  const { currentAdminUser, logout, products, invoices, siteLogo } = useAdmin();
+  const { currentAdminUser, logout, products, invoices, siteLogo, isQuotaExceeded } = useAdmin();
   const [historyStack, setHistoryStack] = useState<string[]>(['dashboard']);
   const historyRef = React.useRef(historyStack);
   historyRef.current = historyStack;
@@ -275,7 +275,29 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite, onNav
 
         {/* Main Admin Content */}
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto space-y-4">
+            {isQuotaExceeded && (
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-amber-100 text-amber-800 font-black text-sm shrink-0">⚡</span>
+                  <div>
+                    <p className="font-black text-amber-950">Firestore Free Daily Read Quota Reached — Local & Offline Cache Mode Active</p>
+                    <p className="text-amber-800 text-[11px] mt-0.5">
+                      All catalog changes, category edits, and photo uploads continue to work smoothly. Quota resets daily or can be upgraded in the Firebase Console.
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={`https://console.firebase.google.com/project/${(window as any)?._firebaseProjectId || 'lunar-hexagon-whl8x'}/firestore/databases/ai-studio-shivanigraphics-49cd7bc2-bbf0-427c-84d5-fb289011f865/data?openUpgradeDialog=true`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-1.5 bg-amber-800 hover:bg-amber-900 text-white font-black text-xs rounded-xl shrink-0 transition-colors flex items-center gap-1.5 shadow-2xs"
+                >
+                  <span>Open Firebase Upgrade</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            )}
             {renderContent()}
           </div>
         </main>

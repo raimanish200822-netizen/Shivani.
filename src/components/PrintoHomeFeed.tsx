@@ -59,7 +59,7 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>(() => getRecentlyViewedIds());
 
-  const { websiteImages, reviews: firestoreReviews, addPublicReview, deleteReview } = useAdmin();
+  const { websiteImages, reviews: firestoreReviews, addPublicReview, deleteReview, categories: firestoreCategories } = useAdmin();
   const approvedReviews = firestoreReviews.filter(r => r.approved !== false);
   const reviewsScrollRef = useRef<HTMLDivElement>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -72,8 +72,6 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [reviewSlideIndex, setReviewSlideIndex] = useState(0);
-
-  const [firestoreCategories] = useState<any[]>([]);
 
   const getLocalAuthorId = () => {
     let id = localStorage.getItem('printo_author_id');
@@ -315,15 +313,19 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
   ];
 
   const officialCategoryPortals = defaultPortals.map(def => {
-    const found = firestoreCategories.find(c => c.id === def.id || c.title?.toLowerCase() === def.title.toLowerCase());
+    const found = (firestoreCategories || []).find(c => c.id === def.id || c.label?.toLowerCase() === def.title.toLowerCase() || c.title?.toLowerCase() === def.title.toLowerCase());
+    const count = products.filter(p => p.category === def.id).length;
     return found ? {
       ...def,
-      title: found.title || def.title,
-      subtitle: found.subtitle || def.subtitle,
+      title: found.label || found.title || def.title,
+      subtitle: found.description || found.subtitle || def.subtitle,
       image: found.image || def.image,
       badge: found.badge || def.badge,
-      itemCount: found.itemCount || def.itemCount
-    } : def;
+      itemCount: count > 0 ? count : def.itemCount
+    } : {
+      ...def,
+      itemCount: count > 0 ? count : def.itemCount
+    };
   });
 
   const faqs = [

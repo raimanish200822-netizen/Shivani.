@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { ProductItem } from '../types';
 import { CATEGORIES } from '../data/products';
 import { WHATSAPP_PRIMARY } from '../utils/whatsapp';
+import { useAdmin } from '../context/AdminContext';
 
 interface CategoryPageProps {
   categoryId: string;
@@ -20,9 +21,11 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   onSelectCategory,
   onBackToHome
 }) => {
+  const { categories } = useAdmin();
+  const availableCategories = (categories && categories.length > 0) ? categories : CATEGORIES;
   const [sortBy, setSortBy] = useState<'popular' | 'name'>('popular');
 
-  const currentCategory = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES[0];
+  const currentCategory = availableCategories.find(c => c.id === categoryId) || availableCategories[0] || CATEGORIES[0];
 
   let filtered = categoryId === 'all'
     ? products

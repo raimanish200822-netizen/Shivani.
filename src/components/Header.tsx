@@ -58,7 +58,8 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateFounder,
   onOpenCompare
 }) => {
-  const { siteLogo } = useAdmin();
+  const { siteLogo, categories } = useAdmin();
+  const activeCategories = (categories && categories.length > 0) ? categories : CATEGORIES;
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -361,7 +362,7 @@ export const Header: React.FC<HeaderProps> = ({
           aria-label="Category Navigation"
           className="border-t border-slate-100 overflow-x-auto scrollbar-none flex items-center gap-1 py-1.5 text-xs font-bold text-slate-600"
         >
-          {CATEGORIES.map(cat => {
+          {activeCategories.map(cat => {
             const isActive = selectedCategoryId === cat.id;
             return (
               <button

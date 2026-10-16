@@ -61,7 +61,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onNavigateFounder,
   onNavigatePolicy
 }) => {
-  const { siteLogo } = useAdmin();
+  const { siteLogo, categories } = useAdmin();
+  const activeCategories = (categories && categories.length > 0) ? categories : CATEGORIES;
   const getCategoryIcon = (id: string) => {
     switch (id) {
       case 'paper-documents': return <FileText className="w-4 h-4 text-purple-600" />;
@@ -195,7 +196,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 </div>
 
                 <div className="space-y-0.5 px-2">
-                  {CATEGORIES.map(cat => {
+                  {activeCategories.map(cat => {
                     const isSelected = selectedCategory === cat.id;
                     return (
                       <button

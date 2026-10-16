@@ -27,8 +27,7 @@ import { ProductGallery } from './ProductGallery';
 import { ProductConfigurator } from './ProductConfigurator';
 import { WHATSAPP_PRIMARY, SUPPORT_EMAIL } from '../utils/whatsapp';
 import { addRecentlyViewedId } from '../utils/recentlyViewed';
-import { db } from '../firebase';
-import { collection, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { useAdmin } from '../context/AdminContext';
 
 interface ProductDetailPageProps {
   product: ProductItem;
@@ -47,11 +46,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onAddToCart,
   onOpenArtworkGuide
 }) => {
+  const { reviews: adminReviews, addPublicReview, deleteReview } = useAdmin();
   const [activeTab, setActiveTab] = useState<'specs' | 'artwork' | 'reviews'>('specs');
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Live Firestore Reviews State
-  const [firestoreReviews, setFirestoreReviews] = useState<any[]>([]);
+  // Live Reviews State synced from AdminContext
   const [reviewSort, setReviewSort] = useState<'newest' | 'highest' | 'lowest'>('newest');
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [newReviewName, setNewReviewName] = useState('');
@@ -64,9 +63,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [reviewSlideIndex, setReviewSlideIndex] = useState(0);
 
   // Filter reviews specifically for this product
-  const productReviews = firestoreReviews.filter(rev => 
-    rev.productId === product.id || 
-    (rev.service && rev.service.toLowerCase().includes(product.title.toLowerCase()))
+  const productReviews = (adminReviews || []).filter(rev => 
+    rev.approved !== false && (
+      (rev as any).productId === product.id || 
+      ((rev as any).service && (rev as any).service.toLowerCase().includes(product.title.toLowerCase())) ||
+      rev.review.toLowerCase().includes(product.title.toLowerCase())
+    )
   );
 
   const displayReviews = productReviews.length > 0 ? productReviews : [
@@ -92,7 +94,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     }
   ];
 
-  const sortedReviews = [...displayReviews].sort((a, b) => {
+  const normalizedReviews = displayReviews.map(r => ({
+    id: r.id,
+    name: r.name,
+    rating: r.rating,
+    date: r.date,
+    comment: (r as any).comment || (r as any).review || '',
+    imageUrl: (r as any).imageUrl || (r as any).photo || ''
+  }));
+
+  const sortedReviews = [...normalizedReviews].sort((a, b) => {
     if (reviewSort === 'highest') {
       return (Number(b.rating) || 5) - (Number(a.rating) || 5);
     }
@@ -108,29 +119,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     }
   }, [product?.id]);
 
-  // Fetch reviews from Firebase in real-time
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'reviews'), (snapshot) => {
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (list.length > 0) {
-        setFirestoreReviews(list);
-      }
-    }, (err) => {
-      console.error("Error fetching reviews:", err);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const getLocalAuthorId = () => {
-    let id = localStorage.getItem('printo_author_id');
-    if (!id) {
-      id = 'usr_' + Math.random().toString(36).substring(2, 11);
-      localStorage.setItem('printo_author_id', id);
-    }
-    return id;
-  };
-
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReviewName.trim() || !newReviewComment.trim()) {
@@ -140,18 +128,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
     setSubmittingReview(true);
     try {
-      await addDoc(collection(db, 'reviews'), {
+      await addPublicReview({
         name: newReviewName.trim(),
-        phone: newReviewPhone.trim(),
         rating: Number(newReviewRating),
-        service: product.title,
-        productId: product.id,
-        comment: newReviewComment.trim(),
-        imageUrl: newReviewImage.trim(),
-        authorId: getLocalAuthorId(),
-        date: 'Just now',
-        createdAt: serverTimestamp(),
-        approved: true
+        review: `[${product.title}] ${newReviewComment.trim()}`,
+        photo: newReviewImage.trim()
       });
       setReviewSuccess(true);
       setTimeout(() => {
@@ -177,7 +158,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     }
     if (confirm('Are you sure you want to delete this review?')) {
       try {
-        await deleteDoc(doc(db, 'reviews', reviewId));
+        await deleteReview(reviewId);
         alert('Review deleted successfully.');
       } catch (err) {
         console.error("Error deleting review:", err);
@@ -383,14 +364,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 </div>
 
                 {/* Customer Printed Photos Gallery */}
-                {displayReviews.some(r => r.imageUrl) && (
+                {normalizedReviews.some(r => r.imageUrl) && (
                   <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
                     <div className="flex items-center gap-2">
                       <Camera className="w-4 h-4 text-[#50007c]" />
-                      <h5 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Customer Printed Photos Gallery ({displayReviews.filter(r => r.imageUrl).length})</h5>
+                      <h5 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Customer Printed Photos Gallery ({normalizedReviews.filter(r => r.imageUrl).length})</h5>
                     </div>
                     <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                      {displayReviews.filter(r => r.imageUrl).map((rev, idx) => (
+                      {normalizedReviews.filter(r => r.imageUrl).map((rev, idx) => (
                         <div key={idx} className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-slate-200 shrink-0 bg-slate-50 group shadow-2xs">
                           <img src={rev.imageUrl} alt={rev.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                           <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 text-white text-[10px] truncate font-medium">
