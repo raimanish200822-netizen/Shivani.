@@ -215,42 +215,87 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
   const [currentAdminUser, setCurrentAdminUser] = useState<AdminUser | null>(null);
 
-  const [products, setProducts] = useState<ProductItem[]>(PRODUCTS);
+  // Local Cache keys to eliminate 2-second flash of old images on page load
+  const CACHE_KEY_LOGO = 'shivani_cached_site_logo';
+  const CACHE_KEY_BANNERS = 'shivani_cached_website_images';
+  const CACHE_KEY_CONTENT = 'shivani_cached_website_content';
+  const CACHE_KEY_PRODUCTS = 'shivani_cached_products';
+
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY_PRODUCTS);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return PRODUCTS;
+  });
+
   const [categories, setCategories] = useState<any[]>(CATEGORIES);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [quotes, setQuotes] = useState<AdminQuote[]>([]);
-  const [siteLogo, setSiteLogo] = useState<string>('https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg');
-  const [websiteImages, setWebsiteImages] = useState<WebsiteImage[]>([
-    { id: 'img-1', title: 'Homepage Hero Main', section: 'Hero', url: 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=1200&q=80', alt: 'Visiting Cards', enabled: true, sortOrder: 1 },
-    { id: 'img-2', title: 'Outdoor Flex Banner', section: 'Hero', url: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1200&q=80', alt: 'Flex Banners', enabled: true, sortOrder: 2 }
-  ]);
-  const [websiteContent, setWebsiteContent] = useState({
-    heroHeading: 'Shivani Graphics · Printo-Style Commercial Printing',
-    heroSubtitle: 'Premium digital printing, visiting cards, flex banners, 3D acrylic LED boards & corporate merch in Delhi NCR.',
-    phone: '+91-9266944315',
-    whatsapp: '919266944315',
-    email: 'shivanidigitalprints@gmail.com',
-    address: 'D3/50, Gali No. 8A, Mahavir Enclave, New Delhi, Delhi 110045',
-    businessName: 'Shivani Graphics',
-    aboutTitle: 'About Shivani Graphics - Delhi NCRs Premier Commercial Printing Press',
-    aboutDescription: 'Established with a commitment to lightning-fast printing, superior 350 GSM card stock, and state-of-the-art Konica Minolta digital printing press in Mahavir Enclave, Delhi.',
-    aboutMission: 'To provide 5-minute visiting cards, bulk flex banners, and 3D acrylic LED boards with unmatched precision and wholesale pricing.',
-    aboutVision: 'To be India\'s most trusted digital print & signage partner for small businesses, agencies, and retail brands.',
-    aboutStory: 'Founded in Mahavir Enclave, New Delhi, Shivani Graphics started as a boutique digital print desk and grew into a full-fledged high-speed production printing house.',
-    aboutImageUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
-    founderName: 'Ranjan Roy',
-    founderRole: 'Founder & Managing Director',
-    founderPhone: '+91-9810157695',
-    founderWhatsapp: '919810157695',
-    founderImageUrl: '',
-    companyImageUrl: '',
-    founderBio: 'Ranjan Roy founded Shivani Graphics in 1996 with a singular pledge: to give every business, creator, and individual pristine commercial print quality with personal accountability.',
-    founderQuote: 'To me, printing is never just paper and ink. It is someone\'s first business card, a startup\'s pitch deck, an author\'s book, or an enterprise\'s grand banner. Since 1996, that promise has never changed.',
-    seoTitle: 'Shivani Graphics · Custom Print & Signage | Delhi NCR',
-    seoDescription: 'Premium commercial digital printing in Delhi NCR & Pan-India. Visiting cards, banners, standees, corporate stationery, photo frames, and customized merchandising with instant WhatsApp ordering.',
-    seoKeywords: 'printing press, visiting cards, flex banners, signages, delhi ncr, shivani graphics, print shop'
+
+  const [siteLogo, setSiteLogo] = useState<string>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY_LOGO);
+      if (cached && cached.trim()) return cached;
+    } catch {}
+    return 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
+  });
+
+  const [websiteImages, setWebsiteImages] = useState<WebsiteImage[]>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY_BANNERS);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [
+      { id: 'img-1', title: 'Homepage Hero Main', section: 'Hero', url: 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=1200&q=80', alt: 'Visiting Cards', enabled: true, sortOrder: 1 },
+      { id: 'img-2', title: 'Outdoor Flex Banner', section: 'Hero', url: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1200&q=80', alt: 'Flex Banners', enabled: true, sortOrder: 2 }
+    ];
+  });
+
+  const [websiteContent, setWebsiteContent] = useState(() => {
+    const baseContent = {
+      heroHeading: 'Shivani Graphics · Printo-Style Commercial Printing',
+      heroSubtitle: 'Premium digital printing, visiting cards, flex banners, 3D acrylic LED boards & corporate merch in Delhi NCR.',
+      phone: '+91-9266944315',
+      whatsapp: '919266944315',
+      email: 'shivanidigitalprints@gmail.com',
+      address: 'D3/50, Gali No. 8A, Mahavir Enclave, New Delhi, Delhi 110045',
+      businessName: 'Shivani Graphics',
+      aboutTitle: 'About Shivani Graphics - Delhi NCRs Premier Commercial Printing Press',
+      aboutDescription: 'Established with a commitment to lightning-fast printing, superior 350 GSM card stock, and state-of-the-art Konica Minolta digital printing press in Mahavir Enclave, Delhi.',
+      aboutMission: 'To provide 5-minute visiting cards, bulk flex banners, and 3D acrylic LED boards with unmatched precision and wholesale pricing.',
+      aboutVision: 'To be India\'s most trusted digital print & signage partner for small businesses, agencies, and retail brands.',
+      aboutStory: 'Founded in Mahavir Enclave, New Delhi, Shivani Graphics started as a boutique digital print desk and grew into a full-fledged high-speed production printing house.',
+      aboutImageUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
+      founderName: 'Ranjan Roy',
+      founderRole: 'Founder & Managing Director',
+      founderPhone: '+91-9810157695',
+      founderWhatsapp: '919810157695',
+      founderImageUrl: (typeof window !== 'undefined' ? localStorage.getItem('shivani_founder_photo') : '') || '',
+      companyImageUrl: (typeof window !== 'undefined' ? localStorage.getItem('shivani_company_photo') : '') || '',
+      founderBio: 'Ranjan Roy founded Shivani Graphics in 1996 with a singular pledge: to give every business, creator, and individual pristine commercial print quality with personal accountability.',
+      founderQuote: 'To me, printing is never just paper and ink. It is someone\'s first business card, a startup\'s pitch deck, an author\'s book, or an enterprise\'s grand banner. Since 1996, that promise has never changed.',
+      seoTitle: 'Shivani Graphics · Custom Print & Signage | Delhi NCR',
+      seoDescription: 'Premium commercial digital printing in Delhi NCR & Pan-India. Visiting cards, banners, standees, corporate stationery, photo frames, and customized merchandising with instant WhatsApp ordering.',
+      seoKeywords: 'printing press, visiting cards, flex banners, signages, delhi ncr, shivani graphics, print shop'
+    };
+
+    try {
+      const cached = localStorage.getItem(CACHE_KEY_CONTENT);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return { ...baseContent, ...parsed };
+      }
+    } catch {}
+    return baseContent;
   });
   const [coupons, setCoupons] = useState<CouponItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([
@@ -297,6 +342,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       });
       setProducts(merged);
+      try {
+        localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(merged));
+      } catch {}
       setIsFirebaseLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'products');
@@ -305,7 +353,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 2. Banners / Website Images Listener
     const unsubBanners = onSnapshot(collection(db, 'banners'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as WebsiteImage));
-      setWebsiteImages(items);
+      if (items.length > 0) {
+        setWebsiteImages(items);
+        try {
+          localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(items));
+        } catch {}
+      }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'banners');
     });
@@ -392,7 +445,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 9. Website Content Listener
     const unsubContent = onSnapshot(doc(db, 'content', 'site_content'), (docSnap) => {
       if (docSnap.exists()) {
-        setWebsiteContent(docSnap.data() as any);
+        const data = docSnap.data() as any;
+        setWebsiteContent(data);
+        try {
+          localStorage.setItem(CACHE_KEY_CONTENT, JSON.stringify(data));
+          if (data.founderImageUrl) localStorage.setItem('shivani_founder_photo', data.founderImageUrl);
+          if (data.companyImageUrl) localStorage.setItem('shivani_company_photo', data.companyImageUrl);
+        } catch {}
       }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'content/site_content');
@@ -453,7 +512,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 13. Logo Branding Listener
     const unsubLogo = onSnapshot(doc(db, 'settings', 'branding'), (docSnap) => {
       if (docSnap.exists() && docSnap.data().url) {
-        setSiteLogo(docSnap.data().url);
+        const logoUrl = docSnap.data().url;
+        setSiteLogo(logoUrl);
+        try {
+          localStorage.setItem(CACHE_KEY_LOGO, logoUrl);
+        } catch {}
       } else {
         const defaultLogo = 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
         setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true }).catch(() => {});
@@ -484,6 +547,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateSiteLogo = async (url: string) => {
     try {
       setSiteLogo(url);
+      try {
+        localStorage.setItem(CACHE_KEY_LOGO, url);
+      } catch {}
       await setDoc(doc(db, 'settings', 'branding'), { url }, { merge: true });
       logAction(`Updated site logo branding`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -495,6 +561,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const defaultLogo = 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
       setSiteLogo(defaultLogo);
+      try {
+        localStorage.removeItem(CACHE_KEY_LOGO);
+      } catch {}
       await setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true });
       logAction(`Reset site logo branding to default`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -528,7 +597,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateProduct = async (updatedProd: ProductItem) => {
     try {
-      setProducts(prev => prev.map(p => p.id === updatedProd.id ? updatedProd : p));
+      setProducts(prev => {
+        const next = prev.map(p => p.id === updatedProd.id ? updatedProd : p);
+        try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
+        return next;
+      });
       await setDoc(doc(db, 'products', updatedProd.id), updatedProd, { merge: true });
       logAction(`Updated product: ${updatedProd.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -538,7 +611,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addProduct = async (newProd: ProductItem) => {
     try {
-      setProducts(prev => [newProd, ...prev]);
+      setProducts(prev => {
+        const next = [newProd, ...prev];
+        try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
+        return next;
+      });
       await setDoc(doc(db, 'products', newProd.id), newProd);
       logAction(`Added new product: ${newProd.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -549,7 +626,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const deleteProduct = async (id: string) => {
     const p = products.find(x => x.id === id);
     try {
-      setProducts(prev => prev.filter(x => x.id !== id));
+      setProducts(prev => {
+        const next = prev.filter(x => x.id !== id);
+        try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(next)); } catch {}
+        return next;
+      });
       await deleteDoc(doc(db, 'products', id));
       logAction(`Deleted product: ${p?.title || id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -670,6 +751,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateWebsiteImage = async (img: WebsiteImage) => {
     try {
+      setWebsiteImages(prev => {
+        const next = prev.map(b => b.id === img.id ? img : b);
+        try { localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(next)); } catch {}
+        return next;
+      });
       await setDoc(doc(db, 'banners', img.id), img, { merge: true });
       logAction(`Updated website image/banner: ${img.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -679,6 +765,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addWebsiteImage = async (img: WebsiteImage) => {
     try {
+      setWebsiteImages(prev => {
+        const next = [img, ...prev];
+        try { localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(next)); } catch {}
+        return next;
+      });
       await setDoc(doc(db, 'banners', img.id), img);
       logAction(`Added website image/banner: ${img.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -688,6 +779,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const deleteWebsiteImage = async (id: string) => {
     try {
+      setWebsiteImages(prev => {
+        const next = prev.filter(b => b.id !== id);
+        try { localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(next)); } catch {}
+        return next;
+      });
       await deleteDoc(doc(db, 'banners', id));
       logAction(`Deleted website image/banner ID: ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
@@ -697,6 +793,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateWebsiteContent = async (content: any) => {
     try {
+      try {
+        localStorage.setItem(CACHE_KEY_CONTENT, JSON.stringify(content));
+      } catch {}
       if (content.founderImageUrl !== undefined) {
         if (content.founderImageUrl) {
           localStorage.setItem('shivani_founder_photo', content.founderImageUrl);
@@ -711,8 +810,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           localStorage.removeItem('shivani_company_photo');
         }
       }
-      await setDoc(doc(db, 'content', 'site_content'), content, { merge: true });
       setWebsiteContent(content);
+      await setDoc(doc(db, 'content', 'site_content'), content, { merge: true });
       logAction(`Updated website CMS content`, currentAdminUser?.name || 'Admin');
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, 'content/site_content');
