@@ -86,9 +86,9 @@ export async function compressImageFile(
 
 /**
  * Uploads an image file with multi-tier permanent storage:
- * Tier 1: Firebase Storage (Permanent Google Cloud Storage bucket, CDN cached, never wiped)
- * Tier 2: Local server storage at /api/upload (returns /uploads/... URL)
- * Tier 3: Compact web-optimized data URL (< 50KB, stored directly in Firestore document)
+ * Tier 1: Instant local server storage at /api/upload (saves to /public/uploads, returns /uploads/... URL in milliseconds)
+ * Tier 2: Permanent Firebase Storage (Google Cloud bucket sync in background)
+ * Tier 3: Compact web-optimized data URL fallback (< 100KB)
  */
 export async function uploadImageFile(file: File, folder = 'uploads'): Promise<string> {
   let dataUrl = '';
@@ -104,7 +104,37 @@ export async function uploadImageFile(file: File, folder = 'uploads'): Promise<s
     dataUrl = await fileToDataUrl(file);
   }
 
-  // Tier 1: Upload directly to Firebase Storage
+  // Tier 1: Upload directly to server API /api/upload (Instant, permanent, 100% reliable)
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image: dataUrl,
+        filename: file.name,
+        folder
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) {
+        // Also fire background upload to Firebase Storage if possible, without blocking UI
+        if (blob) {
+          try {
+            const cleanName = (file.name || 'image').replace(/[^a-zA-Z0-9_.-]/g, '_').replace(/\.[^/.]+$/, '');
+            const filename = `${folder}/${Date.now()}_${cleanName}.jpg`;
+            const storageRef = ref(storage, filename);
+            uploadBytes(storageRef, blob, { contentType: 'image/jpeg' }).catch(() => {});
+          } catch {}
+        }
+        return data.url;
+      }
+    }
+  } catch (serverErr) {
+    console.warn('[Upload] Server upload endpoint unreachable, checking Firebase Storage fallback:', serverErr);
+  }
+
+  // Tier 2: Try Firebase Storage if server upload was unreachable
   if (blob) {
     try {
       const cleanName = (file.name || 'image')
@@ -122,32 +152,11 @@ export async function uploadImageFile(file: File, folder = 'uploads'): Promise<s
       }
     } catch (storageErr) {
       handleStorageError(storageErr, 'uploadBytes', `${folder}/${file.name}`);
-      console.warn('[Upload] Firebase Storage upload error, falling back to server /api/upload:', storageErr);
+      console.warn('[Upload] Firebase Storage error:', storageErr);
     }
   }
 
-  // Tier 2: Upload to server API /api/upload
-  try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image: dataUrl,
-        filename: file.name,
-        folder
-      })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.url) {
-        return data.url;
-      }
-    }
-  } catch (serverErr) {
-    console.warn('[Upload] Server upload endpoint unreachable, falling back to data URL:', serverErr);
-  }
-
-  // Tier 3: High compression fallback (< 50KB to safely fit in Firestore & LocalStorage)
+  // Tier 3: High compression data URL fallback
   if (dataUrl) {
     if (dataUrl.length > 100000) {
       try {

@@ -238,7 +238,22 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const CACHE_KEY_BANNERS = 'shivani_cached_website_images';
   const CACHE_KEY_CONTENT = 'shivani_cached_website_content';
   const CACHE_KEY_PRODUCTS = 'shivani_cached_products';
-  const CACHE_KEY_COUNTDOWN = 'shivani_cached_launch_countdown';
+
+  async function apiCall(endpoint: string, method: string = 'GET', body?: any) {
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      console.warn(`[API] ${method} ${endpoint} error:`, err);
+    }
+    return null;
+  }
 
   const DEFAULT_LAUNCH_COUNTDOWN: LaunchCountdownSettings = {
     enabled: false,
@@ -252,15 +267,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     allowAdminBypass: true
   };
 
-  const [launchCountdown, setLaunchCountdown] = useState<LaunchCountdownSettings>(() => {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY_COUNTDOWN);
-      if (cached) {
-        return { ...DEFAULT_LAUNCH_COUNTDOWN, ...JSON.parse(cached) };
-      }
-    } catch {}
-    return DEFAULT_LAUNCH_COUNTDOWN;
-  });
+  const [launchCountdown, setLaunchCountdown] = useState<LaunchCountdownSettings>(DEFAULT_LAUNCH_COUNTDOWN);
 
   const [products, setProducts] = useState<ProductItem[]>(() => {
     try {
@@ -375,10 +382,57 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(true);
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(() => isFirestoreQuotaExceeded());
 
-  // Real-time Firestore onSnapshot listeners
+  // Real-time Firestore onSnapshot listeners + Server db.json synchronization
   useEffect(() => {
     // Preload core brand assets into session storage immediately
     preloadCoreBrandAssets(siteLogo);
+
+    // Primary Database Sync: Hydrate all collections from server db.json first
+    const syncServerDb = async () => {
+      try {
+        const res = await fetch('/api/db');
+        if (res.ok) {
+          const serverDb = await res.json();
+          let deletedIds: string[] = [];
+          try {
+            const raw = localStorage.getItem('shivani_deleted_product_ids');
+            if (raw) deletedIds = JSON.parse(raw);
+          } catch {}
+
+          if (Array.isArray(serverDb.products) && serverDb.products.length > 0) {
+            const valid = serverDb.products.filter((p: any) => p && p.id && !deletedIds.includes(p.id));
+            setProducts(valid);
+            try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(valid)); } catch {}
+          }
+          if (Array.isArray(serverDb.categories) && serverDb.categories.length > 0) {
+            setCategories(serverDb.categories);
+          }
+          if (Array.isArray(serverDb.banners) && serverDb.banners.length > 0) {
+            setWebsiteImages(serverDb.banners);
+          }
+          if (serverDb.content) {
+            setWebsiteContent((prev: any) => ({ ...prev, ...serverDb.content }));
+          }
+          if (serverDb.settings?.branding?.url) {
+            setSiteLogo(serverDb.settings.branding.url);
+          }
+          if (Array.isArray(serverDb.orders)) setOrders(serverDb.orders);
+          if (Array.isArray(serverDb.quotes)) setQuotes(serverDb.quotes);
+          if (Array.isArray(serverDb.invoices)) setInvoices(serverDb.invoices);
+          if (Array.isArray(serverDb.customers)) setCustomers(serverDb.customers);
+          if (Array.isArray(serverDb.faqs) && serverDb.faqs.length > 0) setFaqs(serverDb.faqs);
+          if (Array.isArray(serverDb.about_us) && serverDb.about_us.length > 0) setAboutUs(serverDb.about_us);
+          if (Array.isArray(serverDb.inventory) && serverDb.inventory.length > 0) setInventory(serverDb.inventory);
+          if (Array.isArray(serverDb.reviews) && serverDb.reviews.length > 0) setReviews(serverDb.reviews);
+          if (Array.isArray(serverDb.coupons)) setCoupons(serverDb.coupons);
+        }
+      } catch (err) {
+        console.warn('[AdminContext] Server DB fetch notice:', err);
+      } finally {
+        setIsFirebaseLoading(false);
+      }
+    };
+    syncServerDb();
 
     // If quota was already hit today, run in offline local cache mode without throwing
     if (isFirestoreQuotaExceeded()) {
@@ -427,22 +481,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         .map(doc => doc.data() as ProductItem)
         .filter(p => p && p.id && !deletedIds.includes(p.id));
 
-      setProducts(firestoreItems);
-      try {
-        localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(firestoreItems));
-      } catch {}
-      preloadImages(firestoreItems.slice(0, 10).map(p => p.images?.[0]?.url));
+      if (firestoreItems.length > 0) {
+        setProducts(firestoreItems);
+        try {
+          localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(firestoreItems));
+        } catch {}
+        preloadImages(firestoreItems.slice(0, 10).map(p => p.images?.[0]?.url));
+      }
       setIsFirebaseLoading(false);
     }, onListenerError('products'));
 
     // 2. Banners / Website Images Listener
     const unsubBanners = onSnapshot(collection(db, 'banners'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as WebsiteImage));
-      setWebsiteImages(items);
-      try {
-        localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(items));
-      } catch {}
       if (items.length > 0) {
+        setWebsiteImages(items);
+        try {
+          localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(items));
+        } catch {}
         preloadImages(items.map(b => b.url));
       }
     }, onListenerError('banners'));
@@ -450,25 +506,33 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 3. Orders Listener
     const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminOrder));
-      setOrders(items);
+      if (items.length > 0) {
+        setOrders(items);
+      }
     }, onListenerError('orders'));
 
     // 4. Invoices Listener
     const unsubInvoices = onSnapshot(collection(db, 'invoices'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as InvoiceRecord));
-      setInvoices(items);
+      if (items.length > 0) {
+        setInvoices(items);
+      }
     }, onListenerError('invoices'));
 
     // 4b. Customers Listener
     const unsubCustomers = onSnapshot(collection(db, 'customers'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminCustomer));
-      setCustomers(items);
+      if (items.length > 0) {
+        setCustomers(items);
+      }
     }, onListenerError('customers'));
 
     // 5. Quotes Listener
     const unsubQuotes = onSnapshot(collection(db, 'quotes'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as AdminQuote));
-      setQuotes(items);
+      if (items.length > 0) {
+        setQuotes(items);
+      }
     }, onListenerError('quotes'));
 
     // 6. Reviews Listener (Deleted reviews stay deleted)
@@ -487,19 +551,25 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } catch {}
       }
       const firestoreReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as ReviewItem));
-      setReviews(firestoreReviews);
+      if (firestoreReviews.length > 0) {
+        setReviews(firestoreReviews);
+      }
     }, onListenerError('reviews'));
 
     // 7. Coupons Listener
     const unsubCoupons = onSnapshot(collection(db, 'coupons'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as CouponItem));
-      setCoupons(items);
+      if (items.length > 0) {
+        setCoupons(items);
+      }
     }, onListenerError('coupons'));
 
     // 8. Inventory Listener
     const unsubInventory = onSnapshot(collection(db, 'inventory'), (snapshot) => {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as InventoryItem));
-      setInventory(items);
+      if (items.length > 0) {
+        setInventory(items);
+      }
     }, onListenerError('inventory'));
 
     // 8b. Categories Listener (Deleted categories stay deleted)
@@ -518,7 +588,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } catch {}
       }
       const firestoreCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCategories(firestoreCategories);
+      if (firestoreCategories.length > 0) {
+        setCategories(firestoreCategories);
+      }
     }, onListenerError('categories'));
 
     // 9. Website Content Listener
@@ -537,13 +609,17 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 10. FAQs Listener
     const unsubFaqs = onSnapshot(collection(db, 'faqs'), (snapshot) => {
       const items = snapshot.docs.map(doc => doc.data() as FaqItem);
-      setFaqs(items);
+      if (items.length > 0) {
+        setFaqs(items);
+      }
     }, onListenerError('faqs'));
 
     // 11. AboutUs Listener
     const unsubAboutUs = onSnapshot(collection(db, 'about_us'), (snapshot) => {
       const items = snapshot.docs.map(doc => doc.data() as AboutUsItem);
-      setAboutUs(items);
+      if (items.length > 0) {
+        setAboutUs(items);
+      }
     }, onListenerError('about_us'));
 
     // 12. Visitor Stats Listener & Session Increment
@@ -601,17 +677,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }, onListenerError('settings/branding'));
 
-    // 14. Launch Countdown Settings Listener
-    const unsubCountdown = onSnapshot(doc(db, 'settings', 'launch_countdown'), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data() as LaunchCountdownSettings;
-        setLaunchCountdown(prev => ({ ...prev, ...data }));
-        try {
-          localStorage.setItem(CACHE_KEY_COUNTDOWN, JSON.stringify(data));
-        } catch {}
-      }
-    }, onListenerError('settings/launch_countdown'));
-
     return () => {
       unsubProducts();
       unsubBanners();
@@ -627,7 +692,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       unsubAboutUs();
       unsubVisitors();
       unsubLogo();
-      unsubCountdown();
     };
   }, []);
 
@@ -638,10 +702,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         localStorage.setItem(CACHE_KEY_LOGO, url);
       } catch {}
-      await setDoc(doc(db, 'settings', 'branding'), { url }, { merge: true });
+      await apiCall('/api/settings', 'POST', { id: 'branding', url });
+      await apiCall('/api/content', 'POST', { siteLogo: url });
+      try {
+        await setDoc(doc(db, 'settings', 'branding'), { url }, { merge: true });
+      } catch {}
       logAction(`Updated site logo branding`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.WRITE, 'settings/branding');
+      console.warn('updateSiteLogo notice', e);
     }
   };
 
@@ -652,33 +720,21 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         localStorage.removeItem(CACHE_KEY_LOGO);
       } catch {}
-      await setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true });
+      await apiCall('/api/settings', 'POST', { id: 'branding', url: defaultLogo });
+      try {
+        await setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true });
+      } catch {}
       logAction(`Reset site logo branding to default`, currentAdminUser?.name || 'Admin');
-    } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, 'settings/branding');
-    }
+    } catch (e) {}
   };
 
   const updateLaunchCountdown = async (settings: LaunchCountdownSettings) => {
-    console.log(`[Firestore Admin] Updating Launch Countdown settings (enabled: ${settings.enabled}, targetDate: ${settings.targetDate})...`);
-    setLaunchCountdown(settings);
-    try {
-      localStorage.setItem(CACHE_KEY_COUNTDOWN, JSON.stringify(settings));
-    } catch {}
-    logAction(`Updated Website Launch Countdown (Enabled: ${settings.enabled})`, currentAdminUser?.name || 'Admin');
-
-    if (!isFirestoreQuotaExceeded()) {
-      try {
-        await setDoc(doc(db, 'settings', 'launch_countdown'), settings, { merge: true });
-        console.log('[Firestore Admin] ✓ Launch countdown settings updated in Firestore.');
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, 'settings/launch_countdown');
-      }
-    }
+    setLaunchCountdown({ ...settings, enabled: false });
+    logAction(`Launch Countdown Disabled`, currentAdminUser?.name || 'Admin');
   };
 
-  const toggleLaunchCountdown = async (enabled: boolean) => {
-    await updateLaunchCountdown({ ...launchCountdown, enabled });
+  const toggleLaunchCountdown = async (_enabled: boolean) => {
+    setLaunchCountdown(prev => ({ ...prev, enabled: false }));
   };
 
   const login = (user: AdminUser) => {
@@ -706,7 +762,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateProduct = async (updatedProd: ProductItem) => {
-    console.log(`[Firestore Admin] Updating product ${updatedProd.id} (${updatedProd.title})...`);
+    console.log(`[Admin] Updating product ${updatedProd.id} (${updatedProd.title})...`);
     // 1. Immediately update state & cache
     setProducts(prev => {
       const next = prev.map(p => p.id === updatedProd.id ? updatedProd : p);
@@ -715,19 +771,17 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
     logAction(`Updated product: ${updatedProd.title}`, currentAdminUser?.name || 'Admin');
 
-    // 2. Sync to Firestore if quota allows
-    if (!isFirestoreQuotaExceeded()) {
-      try {
-        await setDoc(doc(db, 'products', updatedProd.id), updatedProd, { merge: true });
-        console.log(`[Firestore Admin] ✓ Product ${updatedProd.id} successfully updated in Firestore.`);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `products/${updatedProd.id}`);
-      }
-    }
+    // 2. Persist to server db.json via API
+    await apiCall(`/api/products/${updatedProd.id}`, 'PUT', updatedProd);
+
+    // 3. Sync to Firestore if available
+    try {
+      await setDoc(doc(db, 'products', updatedProd.id), updatedProd, { merge: true });
+    } catch (e) {}
   };
 
   const addProduct = async (newProd: ProductItem) => {
-    console.log(`[Firestore Admin] Adding new product ${newProd.id} (${newProd.title})...`);
+    console.log(`[Admin] Adding new product ${newProd.id} (${newProd.title})...`);
     try {
       const raw = localStorage.getItem('shivani_deleted_product_ids');
       if (raw) {
@@ -744,19 +798,18 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
     logAction(`Added new product: ${newProd.title}`, currentAdminUser?.name || 'Admin');
 
-    if (!isFirestoreQuotaExceeded()) {
-      try {
-        await setDoc(doc(db, 'products', newProd.id), newProd);
-        console.log(`[Firestore Admin] ✓ Product ${newProd.id} successfully created in Firestore.`);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.CREATE, `products/${newProd.id}`);
-      }
-    }
+    // 2. Persist to server db.json via API
+    await apiCall('/api/products', 'POST', newProd);
+
+    // 3. Sync to Firestore if available
+    try {
+      await setDoc(doc(db, 'products', newProd.id), newProd);
+    } catch (e) {}
   };
 
   const deleteProduct = async (id: string) => {
     const p = products.find(x => x.id === id);
-    console.log(`[Firestore Admin] Deleting product ${id} (${p?.title || 'Unknown'})...`);
+    console.log(`[Admin] Deleting product ${id} (${p?.title || 'Unknown'})...`);
     // 1. Immediately remove from active state
     setProducts(prev => {
       const next = prev.filter(x => x.id !== id);
@@ -764,7 +817,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return next;
     });
 
-    // 2. Track permanently in localStorage so local fallbacks never resurrect it
+    // 2. Track permanently in localStorage
     try {
       const raw = localStorage.getItem('shivani_deleted_product_ids');
       const deleted: string[] = raw ? JSON.parse(raw) : [];
@@ -776,43 +829,39 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     logAction(`Deleted product: ${p?.title || id}`, currentAdminUser?.name || 'Admin');
 
-    // 3. Delete from Firestore if quota allows
-    if (!isFirestoreQuotaExceeded()) {
-      try {
-        await deleteDoc(doc(db, 'products', id));
-        console.log(`[Firestore Admin] ✓ Product ${id} permanently deleted from Firestore.`);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.DELETE, `products/${id}`);
-      }
-    }
+    // 3. Persist to server db.json via API
+    await apiCall(`/api/products/${id}`, 'DELETE');
+
+    // 4. Delete from Firestore if available
+    try {
+      await deleteDoc(doc(db, 'products', id));
+    } catch (e) {}
   };
 
   const resetToDefaultProducts = async () => {
-    console.log('[Firestore Admin] Resetting product catalog to default templates...');
+    console.log('[Admin] Resetting product catalog to default templates...');
     localStorage.removeItem('shivani_deleted_product_ids');
     setProducts(PRODUCTS);
     try { localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(PRODUCTS)); } catch {}
     logAction(`Reset products catalog to default templates`, currentAdminUser?.name || 'Admin');
 
-    if (!isFirestoreQuotaExceeded()) {
-      try {
-        for (const p of PRODUCTS) {
-          await setDoc(doc(db, 'products', p.id), p);
-        }
-        console.log('[Firestore Admin] ✓ Product catalog reset to default templates successfully.');
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, 'products');
+    await apiCall('/api/products/reset', 'POST');
+
+    try {
+      for (const p of PRODUCTS) {
+        setDoc(doc(db, 'products', p.id), p).catch(() => {});
       }
-    }
+    } catch (e) {}
   };
 
   const updateOrderStatus = async (id: string, status: AdminOrder['status']) => {
     try {
       setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
-      await updateDoc(doc(db, 'orders', id), { status });
+      await apiCall(`/api/orders/${id}`, 'POST', { id, status });
+      try { await updateDoc(doc(db, 'orders', id), { status }); } catch {}
       logAction(`Updated order ${id} status to ${status}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `orders/${id}`);
+      console.warn('updateOrderStatus error:', e);
     }
   };
 
@@ -823,8 +872,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (exists) return prev.map(o => o.id === order.id ? order : o);
         return [order, ...prev];
       });
-      await setDoc(doc(db, 'orders', order.id), order, { merge: true });
-      await setDoc(doc(db, 'invoices', order.id), {
+      await apiCall(`/api/orders/${order.id}`, 'POST', order);
+      await apiCall(`/api/invoices/${order.id}`, 'POST', {
         id: order.id,
         invoiceNumber: `INV-${order.id}`,
         customerName: order.customerName,
@@ -837,83 +886,109 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         totalAmount: order.totalAmount,
         paymentStatus: order.paymentStatus,
         date: order.date
-      }, { merge: true });
+      });
+      try {
+        await setDoc(doc(db, 'orders', order.id), order, { merge: true });
+      } catch {}
       logAction(`Saved order & tracking ID: ${order.id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.WRITE, `orders/${order.id}`);
+      console.warn('saveOrder error:', e);
     }
   };
 
   const deleteOrder = async (id: string) => {
     try {
       setOrders(prev => prev.filter(o => o.id !== id));
-      await deleteDoc(doc(db, 'orders', id));
+      await apiCall(`/api/orders/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'orders', id)); } catch {}
       logAction(`Deleted order ID: ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `orders/${id}`);
+      console.warn('deleteOrder error:', e);
     }
   };
 
   const saveInvoice = async (invoice: InvoiceRecord) => {
     try {
-      await setDoc(doc(db, 'invoices', invoice.id), invoice, { merge: true });
+      setInvoices(prev => {
+        const exists = prev.some(i => i.id === invoice.id);
+        if (exists) return prev.map(i => i.id === invoice.id ? invoice : i);
+        return [invoice, ...prev];
+      });
+      await apiCall(`/api/invoices/${invoice.id}`, 'POST', invoice);
+      try { await setDoc(doc(db, 'invoices', invoice.id), invoice, { merge: true }); } catch {}
       logAction(`Saved invoice: ${invoice.id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.WRITE, `invoices/${invoice.id}`);
-    }
-  };
-
-  const saveCustomer = async (customer: AdminCustomer) => {
-    try {
-      await setDoc(doc(db, 'customers', customer.id), customer, { merge: true });
-      logAction(`Saved customer: ${customer.name}`, currentAdminUser?.name || 'Admin');
-    } catch (e) {
-      handleFirestoreError(e, OperationType.WRITE, `customers/${customer.id}`);
-    }
-  };
-
-  const deleteCustomer = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, 'customers', id));
-      logAction(`Deleted customer ID: ${id}`, currentAdminUser?.name || 'Admin');
-    } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `customers/${id}`);
-    }
-  };
-
-  const updateCategory = async (category: any) => {
-    try {
-      await setDoc(doc(db, 'categories', category.id), category, { merge: true });
-      logAction(`Updated category: ${category.label}`, currentAdminUser?.name || 'Admin');
-    } catch (e) {
-      handleFirestoreError(e, OperationType.WRITE, `categories/${category.id}`);
+      console.warn('saveInvoice error:', e);
     }
   };
 
   const deleteInvoice = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'invoices', id));
+      setInvoices(prev => prev.filter(i => i.id !== id));
+      await apiCall(`/api/invoices/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'invoices', id)); } catch {}
       logAction(`Deleted invoice: ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `invoices/${id}`);
+      console.warn('deleteInvoice error:', e);
+    }
+  };
+
+  const saveCustomer = async (customer: AdminCustomer) => {
+    try {
+      setCustomers(prev => {
+        const exists = prev.some(c => c.id === customer.id);
+        if (exists) return prev.map(c => c.id === customer.id ? customer : c);
+        return [customer, ...prev];
+      });
+      await apiCall(`/api/customers/${customer.id}`, 'POST', customer);
+      try { await setDoc(doc(db, 'customers', customer.id), customer, { merge: true }); } catch {}
+      logAction(`Saved customer: ${customer.name}`, currentAdminUser?.name || 'Admin');
+    } catch (e) {
+      console.warn('saveCustomer error:', e);
+    }
+  };
+
+  const deleteCustomer = async (id: string) => {
+    try {
+      setCustomers(prev => prev.filter(c => c.id !== id));
+      await apiCall(`/api/customers/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'customers', id)); } catch {}
+      logAction(`Deleted customer ID: ${id}`, currentAdminUser?.name || 'Admin');
+    } catch (e) {
+      console.warn('deleteCustomer error:', e);
+    }
+  };
+
+  const updateCategory = async (category: any) => {
+    try {
+      setCategories(prev => prev.map(c => c.id === category.id ? category : c));
+      await apiCall(`/api/categories/${category.id}`, 'POST', category);
+      try { await setDoc(doc(db, 'categories', category.id), category, { merge: true }); } catch {}
+      logAction(`Updated category: ${category.label || category.title}`, currentAdminUser?.name || 'Admin');
+    } catch (e) {
+      console.warn('updateCategory error:', e);
     }
   };
 
   const updateQuoteStatus = async (id: string, status: AdminQuote['status'], price?: number) => {
     try {
-      await updateDoc(doc(db, 'quotes', id), { status, quotedPrice: price });
+      setQuotes(prev => prev.map(q => q.id === id ? { ...q, status, quotedPrice: price } : q));
+      await apiCall(`/api/quotes/${id}`, 'POST', { id, status, quotedPrice: price });
+      try { await updateDoc(doc(db, 'quotes', id), { status, quotedPrice: price }); } catch {}
       logAction(`Updated quote ${id} status to ${status}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `quotes/${id}`);
+      console.warn('updateQuoteStatus error:', e);
     }
   };
 
   const deleteQuote = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'quotes', id));
+      setQuotes(prev => prev.filter(q => q.id !== id));
+      await apiCall(`/api/quotes/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'quotes', id)); } catch {}
       logAction(`Deleted quote: ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `quotes/${id}`);
+      console.warn('deleteQuote error:', e);
     }
   };
 
@@ -924,10 +999,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try { localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(next)); } catch {}
         return next;
       });
-      await setDoc(doc(db, 'banners', img.id), img, { merge: true });
+      await apiCall(`/api/banners/${img.id}`, 'POST', img);
+      try { await setDoc(doc(db, 'banners', img.id), img, { merge: true }); } catch {}
       logAction(`Updated website image/banner: ${img.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `banners/${img.id}`);
+      console.warn('updateWebsiteImage error:', e);
     }
   };
 
@@ -938,10 +1014,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try { localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(next)); } catch {}
         return next;
       });
-      await setDoc(doc(db, 'banners', img.id), img);
+      await apiCall(`/api/banners`, 'POST', img);
+      try { await setDoc(doc(db, 'banners', img.id), img); } catch {}
       logAction(`Added website image/banner: ${img.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `banners/${img.id}`);
+      console.warn('addWebsiteImage error:', e);
     }
   };
 
@@ -952,10 +1029,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try { localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(next)); } catch {}
         return next;
       });
-      await deleteDoc(doc(db, 'banners', id));
+      await apiCall(`/api/banners/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'banners', id)); } catch {}
       logAction(`Deleted website image/banner ID: ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `banners/${id}`);
+      console.warn('deleteWebsiteImage error:', e);
     }
   };
 
@@ -979,28 +1057,33 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       }
       setWebsiteContent(content);
-      await setDoc(doc(db, 'content', 'site_content'), content, { merge: true });
+      await apiCall('/api/content', 'POST', content);
+      try { await setDoc(doc(db, 'content', 'site_content'), content, { merge: true }); } catch {}
       logAction(`Updated website CMS content`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, 'content/site_content');
+      console.warn('updateWebsiteContent error:', e);
     }
   };
 
   const addCoupon = async (c: CouponItem) => {
     try {
-      await setDoc(doc(db, 'coupons', c.code), c);
+      setCoupons(prev => [...prev.filter(item => item.code !== c.code), c]);
+      await apiCall(`/api/coupons/${c.code}`, 'POST', c);
+      try { await setDoc(doc(db, 'coupons', c.code), c); } catch {}
       logAction(`Created coupon: ${c.code}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `coupons/${c.code}`);
+      console.warn('addCoupon error:', e);
     }
   };
 
   const updateInventory = async (id: string, qty: number) => {
     try {
-      await updateDoc(doc(db, 'inventory', id), { currentStock: qty });
+      setInventory(prev => prev.map(inv => inv.id === id ? { ...inv, currentStock: qty } : inv));
+      await apiCall(`/api/inventory/${id}`, 'POST', { id, currentStock: qty });
+      try { await updateDoc(doc(db, 'inventory', id), { currentStock: qty }); } catch {}
       logAction(`Updated inventory stock for item ID ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `inventory/${id}`);
+      console.warn('updateInventory error:', e);
     }
   };
 
@@ -1009,19 +1092,23 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!rev) return;
     const newStatus = !rev.approved;
     try {
-      await updateDoc(doc(db, 'reviews', id), { approved: newStatus });
+      setReviews(prev => prev.map(r => r.id === id ? { ...r, approved: newStatus } : r));
+      await apiCall(`/api/reviews/${id}`, 'POST', { id, approved: newStatus });
+      try { await updateDoc(doc(db, 'reviews', id), { approved: newStatus }); } catch {}
       logAction(`Toggled review approval for ID ${id} to ${newStatus}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `reviews/${id}`);
+      console.warn('toggleReviewApproval error:', e);
     }
   };
 
   const deleteReview = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'reviews', id));
+      setReviews(prev => prev.filter(r => r.id !== id));
+      await apiCall(`/api/reviews/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'reviews', id)); } catch {}
       logAction(`Deleted review ID ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `reviews/${id}`);
+      console.warn('deleteReview error:', e);
     }
   };
 
@@ -1036,64 +1123,78 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       photo: review.photo
     };
     try {
-      await setDoc(doc(db, 'reviews', newRev.id), newRev);
+      setReviews(prev => [newRev, ...prev]);
+      await apiCall('/api/reviews', 'POST', newRev);
+      try { await setDoc(doc(db, 'reviews', newRev.id), newRev); } catch {}
       logAction(`Added public review by ${review.name}`, 'Customer');
     } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `reviews/${newRev.id}`);
+      console.warn('addPublicReview error:', e);
     }
   };
 
   const addFaq = async (faq: FaqItem) => {
     try {
-      await setDoc(doc(db, 'faqs', faq.id), faq);
+      setFaqs(prev => [...prev.filter(f => f.id !== faq.id), faq]);
+      await apiCall('/api/faqs', 'POST', faq);
+      try { await setDoc(doc(db, 'faqs', faq.id), faq); } catch {}
       logAction(`Added FAQ: ${faq.question}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `faqs/${faq.id}`);
+      console.warn('addFaq error:', e);
     }
   };
 
   const updateFaq = async (faq: FaqItem) => {
     try {
-      await setDoc(doc(db, 'faqs', faq.id), faq, { merge: true });
+      setFaqs(prev => prev.map(f => f.id === faq.id ? faq : f));
+      await apiCall(`/api/faqs/${faq.id}`, 'POST', faq);
+      try { await setDoc(doc(db, 'faqs', faq.id), faq, { merge: true }); } catch {}
       logAction(`Updated FAQ: ${faq.question}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `faqs/${faq.id}`);
+      console.warn('updateFaq error:', e);
     }
   };
 
   const deleteFaq = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'faqs', id));
+      setFaqs(prev => prev.filter(f => f.id !== id));
+      await apiCall(`/api/faqs/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'faqs', id)); } catch {}
       logAction(`Deleted FAQ ID ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `faqs/${id}`);
+      console.warn('deleteFaq error:', e);
     }
   };
 
   const addAboutUs = async (item: AboutUsItem) => {
     try {
-      await setDoc(doc(db, 'about_us', item.id), item);
+      setAboutUs(prev => [...prev.filter(a => a.id !== item.id), item]);
+      await apiCall('/api/about_us', 'POST', item);
+      try { await setDoc(doc(db, 'about_us', item.id), item); } catch {}
       logAction(`Added About Us section: ${item.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, `about_us/${item.id}`);
+      console.warn('addAboutUs error:', e);
     }
   };
 
   const updateAboutUs = async (item: AboutUsItem) => {
     try {
-      await setDoc(doc(db, 'about_us', item.id), item, { merge: true });
+      setAboutUs(prev => prev.map(a => a.id === item.id ? item : a));
+      await apiCall(`/api/about_us/${item.id}`, 'POST', item);
+      try { await setDoc(doc(db, 'about_us', item.id), item, { merge: true }); } catch {}
       logAction(`Updated About Us section: ${item.title}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.UPDATE, `about_us/${item.id}`);
+      console.warn('updateAboutUs error:', e);
     }
   };
 
   const deleteAboutUs = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'about_us', id));
+      setAboutUs(prev => prev.filter(a => a.id !== id));
+      await apiCall(`/api/about_us/${id}`, 'DELETE');
+      try { await deleteDoc(doc(db, 'about_us', id)); } catch {}
       logAction(`Deleted About Us section ID ${id}`, currentAdminUser?.name || 'Admin');
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, `about_us/${id}`);
+      console.warn('deleteAboutUs error:', e);
     }
   };
 
