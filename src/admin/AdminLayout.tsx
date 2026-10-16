@@ -20,6 +20,7 @@ import { AnalyticsView } from './AnalyticsView';
 import { CustomersView } from './CustomersView';
 import { CrmOrdersView } from './CrmOrdersView';
 import { FounderManagementView } from './FounderManagementView';
+import { CachedImage } from '../services/imageService';
 
 interface AdminLayoutProps {
   onBackToWebsite: () => void;
@@ -169,7 +170,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite, onNav
         <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="h-12 w-12 rounded-xl overflow-hidden bg-white flex items-center justify-center p-1 shadow-lg">
-              <img src={siteLogo} alt="Shivani Graphics" className="w-full h-full object-cover rounded-lg" />
+              <CachedImage src={siteLogo} fallbackSrc="/logo.jpg" alt="Shivani Graphics" className="w-full h-full object-cover rounded-lg" />
             </div>
             <div className="flex flex-col">
               <span className="font-black text-xs sm:text-sm tracking-tight leading-none">
@@ -229,7 +230,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite, onNav
             </button>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg overflow-hidden bg-white border border-purple-200 flex items-center justify-center">
-                <img src={siteLogo} alt="Logo" className="w-full h-full object-cover" />
+                <CachedImage src={siteLogo} fallbackSrc="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
               </div>
               <span className="font-black text-sm text-slate-900">Admin Studio</span>
             </div>

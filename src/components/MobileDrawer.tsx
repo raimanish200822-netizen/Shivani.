@@ -30,6 +30,7 @@ import { CATEGORIES } from '../data/products';
 import { WHATSAPP_PRIMARY, PHONE_SECONDARY, SUPPORT_EMAIL, STORE_ADDRESS } from '../utils/whatsapp';
 import { PolicyRoute } from './Footer';
 import { useAdmin } from '../context/AdminContext';
+import { CachedImage } from '../services/imageService';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -152,7 +153,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <div className="p-4 bg-[#50007c] text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-white flex items-center justify-center shadow-xs">
-                  <img src={siteLogo} alt="Shivani Graphics" className="w-full h-full object-cover" />
+                  <CachedImage src={siteLogo} fallbackSrc="/logo.jpg" alt="Shivani Graphics" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-black text-sm tracking-tight leading-none">

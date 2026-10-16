@@ -11,6 +11,7 @@ import {
   ChevronUp,
   Camera
 } from 'lucide-react';
+import { uploadImageFile } from '../utils/firebaseStorage';
 
 interface ImageUploaderProps {
   value: string;
@@ -23,6 +24,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   value,
   onChange,
   label = 'Upload Photo',
+  folder = 'uploads',
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -94,13 +96,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     setErrorMsg('');
     setUploading(true);
-    setStatusMessage('Uploading and optimizing photo...');
+    setStatusMessage('Uploading and permanently optimizing photo...');
 
     try {
-      const compressedResult = await compressImage(file);
+      const permanentUrl = await uploadImageFile(file, folder);
       setUploading(false);
-      onChange(compressedResult);
-      setStatusMessage('✓ Photo uploaded directly from gallery! Saved permanently.');
+      onChange(permanentUrl);
+      setStatusMessage('✓ Photo uploaded and saved permanently! It will never expire.');
       setTimeout(() => setStatusMessage(''), 4000);
     } catch (err) {
       console.error('Gallery upload error:', err);

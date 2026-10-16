@@ -1,6 +1,7 @@
-import React, { useState, useRef, MouseEvent } from 'react';
+import React, { useState, useRef, MouseEvent, useEffect } from 'react';
 import { ZoomIn, Maximize2, X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { ProductItem } from '../types';
+import { preloadImages, recordImageLoaded } from '../services/imageService';
 
 interface ProductGalleryProps {
   product: ProductItem;
@@ -15,6 +16,12 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const activeImage = product.images[activeIndex] || product.images[0];
+
+  useEffect(() => {
+    if (product?.images?.length) {
+      preloadImages(product.images.map(img => img.url)).catch(() => {});
+    }
+  }, [product]);
 
   // Mouse move handler for magnifying lens effect
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -88,6 +95,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
             alt={activeImage.alt}
             loading="lazy"
             decoding="async"
+            onLoad={() => recordImageLoaded(activeImage.url)}
             className={`w-full h-full object-cover transition-opacity duration-200 ${
               isZooming ? 'opacity-30' : 'opacity-100'
             }`}

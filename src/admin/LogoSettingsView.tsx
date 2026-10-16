@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, Trash2, Upload, Check, Sparkles, RefreshCw } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { ImageUploader } from './ImageUploader';
+import { CachedImage } from '../services/imageService';
 
 export const LogoSettingsView: React.FC = () => {
   const { siteLogo, updateSiteLogo, deleteSiteLogo } = useAdmin();
   const [logoInput, setLogoInput] = useState(siteLogo);
   const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setLogoInput(siteLogo);
+  }, [siteLogo]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +24,7 @@ export const LogoSettingsView: React.FC = () => {
   const handleResetDefault = async () => {
     if (confirm('Are you sure you want to reset logo to the permanent Shivani Graphics branding logo?')) {
       await deleteSiteLogo();
-      setLogoInput('https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg');
+      setLogoInput('/logo.jpg');
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2500);
     }
@@ -39,7 +44,7 @@ export const LogoSettingsView: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-14 h-14 rounded-2xl bg-white p-1.5 shadow-md flex items-center justify-center overflow-hidden border-2 border-orange-400">
-            <img src={siteLogo} alt="Current Logo" className="w-full h-full object-cover rounded-xl" />
+            <CachedImage src={siteLogo} fallbackSrc="/logo.jpg" alt="Current Logo" className="w-full h-full object-cover rounded-xl" />
           </div>
         </div>
       </div>

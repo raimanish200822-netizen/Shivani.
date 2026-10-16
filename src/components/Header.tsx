@@ -23,6 +23,7 @@ import { ProductItem } from '../types';
 import { CATEGORIES } from '../data/products';
 import { useAdmin } from '../context/AdminContext';
 import { PWAInstallButton } from './PWAInstallButton';
+import { CachedImage } from '../services/imageService';
 
 interface HeaderProps {
   products: ProductItem[];
@@ -118,14 +119,11 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <div className="relative">
                 <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#50007c] flex items-center justify-center text-white font-black text-sm sm:text-base shadow-md group-hover:scale-105 transition-transform overflow-hidden border-2 border-purple-200">
-                  <img 
+                  <CachedImage 
                     src={siteLogo} 
+                    fallbackSrc="/logo.jpg"
                     alt="Shivani Graphics Logo" 
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLElement;
-                      target.style.display = 'none';
-                    }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-[#50007c] -z-10 text-white font-black">
                     SG

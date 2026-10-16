@@ -37,6 +37,7 @@ import { WHATSAPP_PRIMARY } from '../utils/whatsapp';
 import { getRecentlyViewedIds, addRecentlyViewedId } from '../utils/recentlyViewed';
 import { CATEGORIES } from '../data/products';
 import { useAdmin } from '../context/AdminContext';
+import { CachedImage } from '../services/imageService';
 
 interface PrintoHomeFeedProps {
   products: ProductItem[];
@@ -166,7 +167,7 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
       subtitle: 'Premium commercial printing, visiting cards, flex banners, acrylic glow signs, and custom merchandise',
       badge: '⚡ Live Store Highlight',
       minQty: 'Min. Qty: 1 unit',
-      image: 'https://img.sanishtech.com/u/f63d7b4e84f436519e1ffe5dbe248245.png',
+      image: '/promo-banner.png',
       gradient: 'from-black/90 via-black/60 to-black/35',
       ctaText: 'Explore Catalog'
     },
@@ -416,8 +417,9 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
         >
           {/* Background Image with Clean Gradient Overlay */}
           <div className="absolute inset-0">
-            <img
+            <CachedImage
               src={activeHero.image}
+              fallbackSrc="/promo-banner.png"
               alt={activeHero.title}
               className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-1000"
             />
@@ -562,11 +564,10 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
                 >
                   <div>
                     <div className="relative aspect-square rounded-lg bg-slate-100 overflow-hidden mb-2.5">
-                      <img
-                        src={p.images[0]?.url}
+                      <CachedImage
+                        src={p.images[0]?.url || '/logo.jpg'}
+                        fallbackSrc="/logo.jpg"
                         alt={p.title}
-                        loading="lazy"
-                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       {p.featureBadge && (
@@ -636,11 +637,10 @@ export const PrintoHomeFeed: React.FC<PrintoHomeFeedProps> = ({
                 className="bg-white rounded-xl border border-orange-200/90 overflow-hidden cursor-pointer hover:shadow-md transition-all group flex flex-col justify-between"
               >
                 <div className="relative aspect-square bg-slate-100 overflow-hidden">
-                  <img
-                    src={p.images[0]?.url}
+                  <CachedImage
+                    src={p.images[0]?.url || '/logo.jpg'}
+                    fallbackSrc="/logo.jpg"
                     alt={p.title}
-                    loading="lazy"
-                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-orange-600 text-white text-[9px] font-black rounded-sm shadow-xs">

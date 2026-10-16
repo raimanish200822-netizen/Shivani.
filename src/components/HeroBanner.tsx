@@ -132,7 +132,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                   <div className="bg-slate-900/90 p-3 rounded-xl border border-purple-500/40 shadow-lg shadow-purple-900/20 group/imgcard">
                     <div className="relative overflow-hidden rounded-lg mb-2">
                       <img 
-                        src="https://img.sanishtech.com/u/f63d7b4e84f436519e1ffe5dbe248245.png" 
+                        src="/promo-banner.png" 
                         alt="Shivani Graphics · Custom Print & Signage" 
                         className="w-full h-24 object-cover rounded-lg group-hover/imgcard:scale-110 transition-transform duration-500"
                       />

@@ -45,6 +45,20 @@ export const FounderManagementView: React.FC<FounderManagementViewProps> = ({ on
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  React.useEffect(() => {
+    setForm(prev => ({
+      ...prev,
+      founderName: websiteContent.founderName || prev.founderName,
+      founderRole: websiteContent.founderRole || prev.founderRole,
+      founderPhone: websiteContent.founderPhone || prev.founderPhone,
+      founderWhatsapp: websiteContent.founderWhatsapp || prev.founderWhatsapp,
+      founderImageUrl: websiteContent.founderImageUrl !== undefined ? websiteContent.founderImageUrl : prev.founderImageUrl,
+      companyImageUrl: websiteContent.companyImageUrl !== undefined ? websiteContent.companyImageUrl : prev.companyImageUrl,
+      founderBio: websiteContent.founderBio || prev.founderBio,
+      founderQuote: websiteContent.founderQuote || prev.founderQuote
+    }));
+  }, [websiteContent]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);

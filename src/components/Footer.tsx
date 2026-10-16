@@ -16,6 +16,7 @@ import {
 } from '../utils/whatsapp';
 
 import { useAdmin } from '../context/AdminContext';
+import { CachedImage } from '../services/imageService';
 
 export type PolicyRoute = 'terms' | 'privacy' | 'refund-policy' | 'artwork-guidelines' | 'contact';
 
@@ -65,11 +66,11 @@ export const Footer: React.FC<FooterProps> = ({
         <div className="flex flex-col items-center">
           <div className="flex items-center gap-2.5">
             <div className="w-11 h-11 rounded-2xl bg-[#50007c] flex items-center justify-center overflow-hidden shadow-sm border border-purple-200">
-              <img 
+              <CachedImage 
                 src={siteLogo} 
+                fallbackSrc="/logo.jpg"
                 alt="Shivani Graphics" 
                 className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
               />
             </div>
             <div className="flex items-center font-sans font-black text-2xl sm:text-3xl tracking-tight leading-none">

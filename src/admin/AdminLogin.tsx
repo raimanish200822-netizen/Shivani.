@@ -101,7 +101,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToWebsite }) => {
         
         <div className="text-center space-y-2">
           <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center text-white mx-auto shadow-lg overflow-hidden border-2 border-purple-200">
-            <img src="https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg" alt="Shivani Graphics" className="w-full h-full object-cover" />
+            <img src="/logo.jpg" alt="Shivani Graphics" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Shivani Graphics</h1>
           <p className="text-xs font-bold text-purple-800 uppercase tracking-wider">Secure Master Admin Portal</p>

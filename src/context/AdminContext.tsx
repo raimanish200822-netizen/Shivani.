@@ -4,6 +4,7 @@ import { ProductItem, FaqItem, AboutUsItem } from '../types';
 import { FAQS } from '../data/faqs';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { preloadCoreBrandAssets, preloadImages, recordImageLoaded } from '../services/imageService';
 
 export interface AdminUser {
   email: string;
@@ -243,7 +244,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const cached = localStorage.getItem(CACHE_KEY_LOGO);
       if (cached && cached.trim()) return cached;
     } catch {}
-    return 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
+    return '/logo.jpg';
   });
 
   const [websiteImages, setWebsiteImages] = useState<WebsiteImage[]>(() => {
@@ -330,6 +331,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Real-time Firestore onSnapshot listeners
   useEffect(() => {
+    // Preload core brand assets into session storage immediately
+    preloadCoreBrandAssets(siteLogo);
+
     // 1. Products Listener
     const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
       const firestoreItems = snapshot.docs.map(doc => doc.data() as ProductItem);
@@ -345,6 +349,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(merged));
       } catch {}
+      // Preload top products into browser memory & session cache
+      preloadImages(merged.slice(0, 10).map(p => p.images?.[0]?.url));
       setIsFirebaseLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'products');
@@ -358,6 +364,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try {
           localStorage.setItem(CACHE_KEY_BANNERS, JSON.stringify(items));
         } catch {}
+        // Preload banner images into session cache
+        preloadImages(items.map(b => b.url));
       }
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, 'banners');
@@ -514,11 +522,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (docSnap.exists() && docSnap.data().url) {
         const logoUrl = docSnap.data().url;
         setSiteLogo(logoUrl);
+        recordImageLoaded(logoUrl);
         try {
           localStorage.setItem(CACHE_KEY_LOGO, logoUrl);
         } catch {}
       } else {
-        const defaultLogo = 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
+        const defaultLogo = '/logo.jpg';
+        recordImageLoaded(defaultLogo);
         setDoc(doc(db, 'settings', 'branding'), { url: defaultLogo }, { merge: true }).catch(() => {});
         setSiteLogo(defaultLogo);
       }
@@ -547,6 +557,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateSiteLogo = async (url: string) => {
     try {
       setSiteLogo(url);
+      recordImageLoaded(url);
       try {
         localStorage.setItem(CACHE_KEY_LOGO, url);
       } catch {}
@@ -559,7 +570,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const deleteSiteLogo = async () => {
     try {
-      const defaultLogo = 'https://img.sanishtech.com/u/5467f9a9329e92601bbe9217b2523cff.jpg';
+      const defaultLogo = '/logo.jpg';
       setSiteLogo(defaultLogo);
       try {
         localStorage.removeItem(CACHE_KEY_LOGO);

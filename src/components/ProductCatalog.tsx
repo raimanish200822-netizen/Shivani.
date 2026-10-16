@@ -5,6 +5,7 @@ import { ProductItem } from '../types';
 import { CATEGORIES } from '../data/products';
 import { WHATSAPP_PRIMARY } from '../utils/whatsapp';
 import { ProductListSkeleton } from './SkeletonLoader';
+import { CachedImage } from '../services/imageService';
 
 interface ProductCatalogProps {
   products: ProductItem[];
@@ -121,11 +122,10 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                     className="relative aspect-4/3 overflow-hidden bg-slate-100 cursor-pointer"
                     onClick={() => handleConfigure(prod)}
                   >
-                    <img
-                      src={prod.images[0].url}
+                    <CachedImage
+                      src={prod.images[0]?.url || '/logo.jpg'}
+                      fallbackSrc="/logo.jpg"
                       alt={prod.title}
-                      loading="lazy"
-                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     

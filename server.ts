@@ -1,17 +1,24 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import { GoogleGenAI } from '@google/genai';
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
+let genAIClient: GoogleGenAI | null = null;
+function getGenAI() {
+  if (!genAIClient && process.env.GEMINI_API_KEY) {
+    genAIClient = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
-});
+  return genAIClient;
+}
 
 const DB_FILE = path.resolve(process.cwd(), 'db.json');
 
@@ -179,6 +186,67 @@ function saveDb(data: any) {
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+  // Ensure public/uploads directory exists
+  const UPLOADS_DIR = path.resolve(process.cwd(), 'public', 'uploads');
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+
+  // Statically serve uploads with long caching headers
+  app.use('/uploads', express.static(UPLOADS_DIR, {
+    maxAge: '30d',
+    immutable: true
+  }));
+
+  // Permanent image upload endpoint
+  app.post('/api/upload', (req, res) => {
+    try {
+      const { image, filename } = req.body;
+      if (!image) {
+        return res.status(400).json({ error: 'No image data provided' });
+      }
+
+      // Handle data URL prefix if present (e.g. data:image/jpeg;base64,...)
+      const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      let buffer: Buffer;
+      let ext = 'jpg';
+
+      if (matches && matches.length === 3) {
+        const mimeType = matches[1];
+        if (mimeType.includes('png')) ext = 'png';
+        else if (mimeType.includes('webp')) ext = 'webp';
+        else if (mimeType.includes('svg')) ext = 'svg';
+        else ext = 'jpg';
+        buffer = Buffer.from(matches[2], 'base64');
+      } else {
+        buffer = Buffer.from(image, 'base64');
+      }
+
+      const cleanFilename = (filename || 'photo')
+        .replace(/[^a-zA-Z0-9_.-]/g, '_')
+        .replace(/\.[^/.]+$/, '');
+      const uniqueName = `${cleanFilename}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+      const filePath = path.join(UPLOADS_DIR, uniqueName);
+
+      fs.writeFileSync(filePath, buffer);
+
+      // If production dist exists, copy there too
+      const distUploads = path.resolve(process.cwd(), 'dist', 'uploads');
+      if (fs.existsSync(distUploads)) {
+        try {
+          fs.copyFileSync(filePath, path.join(distUploads, uniqueName));
+        } catch {}
+      }
+
+      const publicUrl = `/uploads/${uniqueName}`;
+      return res.json({ success: true, url: publicUrl, size: buffer.length });
+    } catch (err: any) {
+      console.error('[Upload Error]', err);
+      return res.status(500).json({ error: err.message || 'Failed to save image' });
+    }
+  });
 
   // API Routes
   app.get('/api/db', (req, res) => {
@@ -187,6 +255,12 @@ async function startServer() {
 
   app.post('/api/gemini/chat', async (req, res) => {
     try {
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(503).json({
+          error: 'GEMINI_API_KEY is not configured on the server. Please configure it in your environment.'
+        });
+      }
+
       const { messages } = req.body;
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: 'Invalid messages array' });
@@ -197,8 +271,13 @@ async function startServer() {
         parts: [{ text: msg.text }]
       }));
 
+      const ai = getGenAI();
+      if (!ai) {
+        return res.status(500).json({ error: 'Failed to initialize Gemini client' });
+      }
+
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-2.5-flash',
         contents: contents,
         config: {
           systemInstruction: 'You are Shivani AI, the expert customer support and print advisor assistant for Shivani Graphics (a premier Printo-style commercial printing service in Delhi NCR). You help customers with visiting cards, flex banners, corporate gifts, signage, document printing, file uploads, bulk quotes, and store pickups in Mahavir Enclave, New Delhi. Be polite, professional, and helpful.'

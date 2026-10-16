@@ -24,6 +24,7 @@ import {
   BUSINESS_TRADE_NAME 
 } from '../../utils/whatsapp';
 import { useAdmin } from '../../context/AdminContext';
+import { CachedImage } from '../../services/imageService';
 
 interface FounderPageProps {
   onBackToHome: () => void;
@@ -33,18 +34,9 @@ interface FounderPageProps {
 export const FounderPage: React.FC<FounderPageProps> = ({ onBackToHome, onExploreCatalog }) => {
   const { websiteContent } = useAdmin();
 
-  // Local fallback storage for Founder photo and Company facility photo
-  const [localFounderPhoto] = useState<string>(() => {
-    return localStorage.getItem('shivani_founder_photo') || '';
-  });
-
-  const [localCompanyPhoto] = useState<string>(() => {
-    return localStorage.getItem('shivani_company_photo') || '';
-  });
-
   // Photo priority: Admin Panel / Firestore content takes top priority, then local upload fallback
-  const founderPhoto = websiteContent.founderImageUrl || localFounderPhoto;
-  const companyPhoto = websiteContent.companyImageUrl || localCompanyPhoto;
+  const founderPhoto = websiteContent.founderImageUrl || (typeof window !== 'undefined' ? localStorage.getItem('shivani_founder_photo') : '') || '';
+  const companyPhoto = websiteContent.companyImageUrl || (typeof window !== 'undefined' ? localStorage.getItem('shivani_company_photo') : '') || '';
 
   const founderName = websiteContent.founderName || BUSINESS_OWNER;
   const founderRole = websiteContent.founderRole || 'Founder & Managing Director';
@@ -115,8 +107,9 @@ export const FounderPage: React.FC<FounderPageProps> = ({ onBackToHome, onExplor
               {/* Photo Display Container */}
               <div className="relative aspect-4/5 w-full rounded-xl overflow-hidden bg-gradient-to-br from-[#28003e] via-[#50007c] to-[#7915a8] flex flex-col items-center justify-center text-white border border-slate-200 shadow-inner group">
                 {founderPhoto ? (
-                  <img 
+                  <CachedImage 
                     src={founderPhoto} 
+                    fallbackSrc="/logo.jpg"
                     alt={`${founderName} - Founder of Shivani Graphics`}
                     className="w-full h-full object-cover"
                   />
@@ -250,8 +243,9 @@ export const FounderPage: React.FC<FounderPageProps> = ({ onBackToHome, onExplor
               {/* Facility Photo Box */}
               <div className="relative aspect-16/9 w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-200 flex flex-col items-center justify-center text-white shadow-inner">
                 {companyPhoto ? (
-                  <img 
+                  <CachedImage 
                     src={companyPhoto} 
+                    fallbackSrc="/promo-banner.png"
                     alt="Shivani Graphics Printing Facility - Mahavir Enclave New Delhi" 
                     className="w-full h-full object-cover"
                   />
